@@ -1,0 +1,14 @@
+[
+  {
+    "name" : "Приложения",
+    "foldername" : "applications"
+  },
+    {
+    "name" : "Игры",
+    "foldername" : "games"
+  },
+    {
+    "name" : "China-игры",
+    "foldername" : "cgames"
+  }
+]

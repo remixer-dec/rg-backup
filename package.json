@@ -1,0 +1,17 @@
+{
+  "name": "rugame-parser",
+  "version": "1.0.0",
+  "description": "Creates a backup of data stored on rugame.mobi",
+  "author": "R D",
+  "bin": {},
+  "scripts": {},
+  "main": "app.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "node-fetch": "^1.7.2",
+  },
+  "devDependencies": {},
+  "preferGlobal": false,
+  "private": true,
+  "license": "MIT"
+}
