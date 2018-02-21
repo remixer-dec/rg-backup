@@ -52,12 +52,7 @@ if(check()){ //es6
                     window['icons_'+folder] = ic;
                     all = '';
                     tt = ttt = 0;
-                    for(let cat of j){
-                        setTimeout(loadAppList,tt,cat,ic);
-                        tt+=50;
-                    }
-                    setTimeout(loadAppList,tt,{id:'top'},ic);
-                    tt+=2500;
+                    setTimeout(loadAppList,tt,j,ic);
                     setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
                     //$('.mdl-layout__tab-bar-right-button').classList.add('is-active')
                 });
@@ -66,17 +61,12 @@ if(check()){ //es6
             $('.'+cf+'-tab').click();
         }
     }
-    function loadAppList(cat,ic){
-        var pth = '';
-        if(cat.id == 'top'){
-            pth = 'top.json'
-        }  else{
-            pth = cat.name+'/applist.json';
-        }
-        fetchJSON(cf+'/data/'+pth).then((al)=>{
+    function loadAppList(cats,ic){
+        fetchJSON(cf+'/data/v2data.json').then((al)=>{
+            for(let cat of cats){
             var list = '';
-            for(var app of al){
-                let icon = ic['i'+app.id];
+            for(var app of al[cat.id]){
+                let icon = ic['i'+app[0]];
                 if(icon){
                     icon = 'data:image/png;base64,'+icon;
                 } else {
@@ -84,30 +74,39 @@ if(check()){ //es6
                 }
                 list += `
                 <li class="mdl-list__item">
-                  <span class="mdl-list__item-primary-content" onclick="fillAppInfo(${app.id})">
-                  <img class="mdl-list__item-icon" src="${icon}">
-                  <span class="mdl-list__item-text-body">${app.name}</span>
+                  <span class="mdl-list__item-primary-content" onclick="fillAppInfo(${app[0]})">
+                  <img class="mdl-list__item-icon appic" data-src="${icon}">
+                  <span class="mdl-list__item-text-body">${app[1]}</span>
                   </span>
                   <span class="mdl-list__item-secondary-content">
-                    <a class="mdl-list__item-secondary-action" href="javascript:fillAppInfo(${app.id})"><i class="material-icons">info</i></a>
+                    <a class="mdl-list__item-secondary-action" href="javascript:fillAppInfo(${app[0]})"><i class="mi hidden">info</i></a>
                   </span>
                 </li>
                 `;
             }
+            if(cat.id=="0"){cat.id="top"}
                 setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
-                ttt+=300;
-                if(cat.id!='top'){
+                ttt+=20;
+                if(cat.id != 'top'){
                     all += list;
-                } else {
-                    setTimeout(insertAppList,ttt,$(`#${cf}_all`).firstChild,all);
-                    ttt+=500;
-                    setTimeout(()=>{$('#spinner').classList.add('hidden')},ttt);
                 }
-        });
+                if(cats[cats.length-1].id==cat.id){
+                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
+                    ttt+=50;
+                    setTimeout(()=>{
+                        document.querySelectorAll('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
+                        document.querySelectorAll('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
+                    },ttt)
+                    ttt+=250
+                    setTimeout(()=>{
+                        $('#spinner').classList.add('hidden')
+                    },ttt);
+                }
+        }});
     }
-    function insertAppList(el,list){
+    function insertAppList(el,list,add){
         console.log('loading:'+el.parentElement.id);
-        el.innerHTML = list;
+        el.innerHTML = add?el.innerHTML+list:list;
     }
     function optsearch(){
         lastinput = new Date().getTime()
