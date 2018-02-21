@@ -84,7 +84,7 @@ if(check()){ //es6
                 }
                 list += `
                 <li class="mdl-list__item">
-                  <span class="mdl-list__item-primary-content">
+                  <span class="mdl-list__item-primary-content" onclick="fillAppInfo(${app.id})">
                   <img class="mdl-list__item-icon" src="${icon}">
                   <span class="mdl-list__item-text-body">${app.name}</span>
                   </span>
@@ -244,13 +244,10 @@ if(check()){ //es6
         $('#lybox').scroll(0,0);
     }
     setTimeout(()=>{
-        fetchJSON('structure.json')
-        .then((j)=>{
-            for(let el of j){
-                addItem('a','mdl-navigation__link',el.name,'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${el.foldername}')`,'me-'+el.foldername);
+        for(let folder in locale.folders){
+                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+locale.folders[folder]);
             }
-            addItem('a','mdl-navigation__link','О сервисе','.mdl-layout__drawer .mdl-navigation',`javascript:alert('Данный проект был разработан с целью архивирования данных о всех доступных j2me-приложениях с сайта rugame.mobi, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Также разработчик не несет ответственности за все предоставленные данные и файлы в папке all. Подробнее о бэкапе сайта в readme.md . Для работы с данным сервисом требуется современный брауезер с поддержкой ES6')`,'me-about');
-        });
+            addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:alert(locale.about2)`,'me-about');
         selectSection('applications');
     }, 1200);
 }

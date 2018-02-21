@@ -1,8 +1,42 @@
 const l = window.navigator.languages||[window.navigator.language]
 locales = {
-    en:{},
+    en:{
+        l:'en',
+        notSupported:'Your browser does not support ES6. This app requires it.',
+        tabs:{
+            applications:{
+                3482: 'ARCHIVERS', 3483: 'MULTIMEDIA', 3484: 'INTERNET', 3485: 'GPS', 3486: 'SYSTEM', 3738: 'MAPS',
+                3739: 'TRANSLATORS', 4330: 'JOKES', 4715: 'OTHER', 75081: 'EMULATORS', 2171: 'SMS COLLECTIONS',
+                10727: 'MESSAGERS', 10732: 'OFFICE', 5733: 'BLUETOOTH', 10810: 'NEWS RSS WEATHER',
+                10641: 'GUIDES JOURNALS', 10645: 'ALARMS CLOCKS', 13816: 'STUDY CALCULATORS', 22133: 'SCREENSAVERS'
+            },
+            games:{
+                3: 'ARCADE', 2: 'ACTION', 4: 'CARDGAMES', 5: 'ONLINE', 6: 'RACING', 7: 'FIGHTING', 8: 'QUESTS', 9: 'RPG', 10: 'LOGICAL',
+                6920: 'TABLE', 7169: 'ADVENTURES', 7135: 'SIMULATORS', 11: 'STRATEGIES', 12: 'SHOOTERS', 13: 'SPORTS'
+            },
+            cgames:{
+                195: 'CARDGAMES', 12: 'ARCADE', 2: 'ACTION', 328: 'RACING', 17: 'FIGHTING', 19: 'QUESTS', 13: 'LOGICAL',
+                389: 'TABLE', 4: 'ONLINE', 1513: 'ADVENTURES', 15: 'RPG', 358: 'SIMULATORS', 14: 'SPORTS', 7: 'STRATEGIES', 6: 'SHOOTERS'
+            }
+        },
+        tooltips:{
+            'appLink':'Go to the source', 'appViews':'Views', 'appDls':'Downloads',
+            'appComments':'Comments', 'appBy':'Uploaded by', 'appVendor':'Developer',
+            'appCat':'Category', 'appDate':'Uploaded', 'appUpdate':'Updated'
+        },
+        folders:{
+            "applications": "Apps",
+            "games":"Games",
+            "cgames": "Chinese Games"
+        },
+        about:'About',
+        about2:'This is a j2me game catalogue, created to backup all the info about all J2ME ROMS from rugame.mobi. See readme.md for more info.',
+        all:'ALL',
+        top:'TOP'
+    },
     ru:{
-        notSupported:'Ваш браузер устарел, данный сервис разработан с использованием современных стандартов, которые не поддерживаются вашим браузером.'
+        l:'ru',
+        notSupported:'Ваш браузер устарел, данный сервис разработан с использованием современных стандартов, которые не поддерживаются вашим браузером.',
         tabs:{
             applications:{
                 3482: 'АРХИВАТОРЫ',3483: 'МУЛЬТИМЕДИЯ',3484: 'ИНТЕРНЕТ',3485: 'GPS',3486: 'СИСТЕМНЫЕ',3738: 'КАРТЫ СХЕМЫ',
@@ -25,6 +59,13 @@ locales = {
             'appComments':'Обсуждение', 'appBy':'Загрузил', 'appVendor':'Разработчик',
             'appCat':'Категория', 'appDate':'Добавлено', 'appUpdate':'Обновлено'
         },
+        folders:{
+            "applications": "Приложения",
+            "games":"Игры",
+            "cgames": "China-игры"
+        },
+        about:'О сервисе',
+        about2:'Данный проект был разработан с целью архивирования данных о всех доступных j2me-приложениях с сайта rugame.mobi, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Также разработчик не несет ответственности за все предоставленные данные и файлы в папке all. Подробнее о бэкапе сайта в readme.md . Для работы с данным сервисом требуется современный брауезер с поддержкой ES6',
         all:'ВСЕ',
         top:'ТОП'
     }
@@ -65,6 +106,7 @@ function addTooltips(){
     return tthtml
 }
 function initialize(){
+    document.getElementsByTagName('html')[0].lang = locale.l
     window.alltabs.innerHTML += addTabs()
     window.tooltips.innerHTML += addTooltips()
     window.lists.innerHTML += panelhtml
