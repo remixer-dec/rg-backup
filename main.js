@@ -36,6 +36,7 @@ if(check()){ //es6
         $(to).appendChild(item);
     }
     function selectSection(folder){
+        if(cf == folder){return}
         document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.add('hidden')});
         cf = folder;
         document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.remove('hidden')});
@@ -47,6 +48,9 @@ if(check()){ //es6
                     if(screenshots){
                         fetchJSON(cf+'/data/screenshots.json').then((sc)=> {
                             window['scr_'+folder] = sc;
+                            if(window.location.hash!="#"){
+                                setTimeout(locate,1,window.location)
+                            }
                         });
                     }
                     window['icons_'+folder] = ic;
@@ -74,12 +78,12 @@ if(check()){ //es6
                 }
                 list += `
                 <li class="mdl-list__item">
-                  <span class="mdl-list__item-primary-content" onclick="fillAppInfo(${app[0]})">
+                  <span class="mdl-list__item-primary-content" onclick="relocate('#/${scf()}/${app[0]}')">
                   <img class="mdl-list__item-icon appic" data-src="${icon}">
                   <span class="mdl-list__item-text-body">${app[1]}</span>
                   </span>
                   <span class="mdl-list__item-secondary-content">
-                    <a class="mdl-list__item-secondary-action" href="javascript:fillAppInfo(${app[0]})"><i class="mi hidden">info</i></a>
+                    <a class="mdl-list__item-secondary-action" href="#/${scf()}/${app[0]}"><i class="mi hidden">info</i></a>
                   </span>
                 </li>
                 `;
@@ -162,9 +166,12 @@ if(check()){ //es6
         alert('The magic number is:'+magicNumber)
 
     }
-    function fillAppInfo(appid){
-        fetchJSON(cf+'/data/all/'+appid+'.json').then((a)=>{
-            let icons = window['icons_'+cf];
+    function getAppInfo(appid,folder){
+        if(!folder){
+            folder = cf;
+        }
+        fetchJSON(folder+'/data/all/'+appid+'.json').then((a)=>{
+            let icons = window['icons_'+folder]||[];
             $('#appIcon').src=icons['i'+a.id]?'data:image/png;base64,'+icons['i'+a.id]:'10.png';
             setField(a,'name','appTitle');
             setField(a,'vie','appViews');
@@ -199,7 +206,7 @@ if(check()){ //es6
                     } else {
                         size = '';
                     }
-                    let link = localLinks?cf+'/files/'+l.file:l.url;
+                    let link = localLinks?folder+'/files/'+l.file:l.url;
                     dlc+=`
                     <a href="${link}" onclick="getMLink(event,'${l.file}')" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
                     <i class="material-icons">file_download</i>${l.type}
@@ -237,6 +244,7 @@ if(check()){ //es6
     }
     function closeTheBox(){
         $('#infobox').classList.add('hidden');
+        window.location.hash="#"
     }
     function openTheBox(){
         $('#infobox').classList.remove('hidden');
@@ -247,6 +255,10 @@ if(check()){ //es6
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+locale.folders[folder]);
             }
             addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:alert(locale.about2)`,'me-about');
-        selectSection('applications');
+        if(window.location.hash.length>1){
+            selectSection(parseHash(window.location.hash)[0])
+        }else{
+            selectSection('applications');
+        }
     }, 1200);
 }

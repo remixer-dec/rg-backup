@@ -7,7 +7,7 @@ locales = {
             applications:[
                 [3482,'ARCHIVERS'], [3483,'MULTIMEDIA'], [3484,'INTERNET'], [3485,'GPS'], [3486,'SYSTEM'], [3738,'MAPS'],
                 [3739,'TRANSLATORS'], [4330,'JOKES'], [4715,'OTHER'], [75081,'EMULATORS'], [2171,'SMS COLLECTIONS'],
-                [10727,'MESSAGERS'], [10732,'OFFICE'], [5733,'BLUETOOTH'], [10810,'NEWS RSS WEATHER'],
+                [10727,'MESSEGENRS'], [10732,'OFFICE'], [5733,'BLUETOOTH'], [10810,'NEWS RSS WEATHER'],
                 [10641,'GUIDES JOURNALS'], [10645,'ALARMS CLOCKS'], [13816,'STUDY CALCULATORS'], [22133,'SCREENSAVERS']
             ],
             games:[
@@ -105,10 +105,50 @@ function addTooltips(){
     }
     return tthtml
 }
+function relocate(hash){
+    document.location.hash=hash;
+}
+function scf(bw){
+    return bw?(bw=='apps'?'applications':bw):(cf[0]=='a'?'apps':cf);
+}
+function parseHash(url){
+    let h = new URL(url).hash.substr(1)
+    let type = h.match(/^\/(apps|games|cgames)\/([0-9]+)$/i)
+    if(type){
+        let at = scf(type[1])
+        let id = parseInt(type[2])
+        return [at,id]
+    } else{
+        return false;
+    }
+}
+function locate(url){
+    let r = parseHash(url)
+    if(r){
+        getAppInfo(r[1],r[0])
+    }
+}
+function hashHangler(e){
+    locate(e.newURL);
+}
 function initialize(){
+    function loadScript(src){
+        var script = document.createElement('script')
+        script.src = src
+        var p = new Promise((rs,rj)=>{
+            script.onload = () => rs()
+            script.onerror = () => rj()
+        })
+        document.head.appendChild(script)
+        return p;
+    }
     document.getElementsByTagName('html')[0].lang = locale.l
     window.alltabs.innerHTML += addTabs()
     window.tooltips.innerHTML += addTooltips()
     window.lists.innerHTML += panelhtml
+    window.addEventListener("hashchange", hashHangler);
+    loadScript("https://code.getmdl.io/1.3.0/material.min.js").then(()=>{
+        loadScript("/main.js")
+    })
 }
 setTimeout(initialize,1)
