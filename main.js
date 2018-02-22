@@ -173,12 +173,13 @@ if(check()){ //es6
         fetchJSON(folder+'/data/all/'+appid+'.json').then((a)=>{
             let icons = window['icons_'+folder]||[];
             $('#appIcon').src=icons['i'+a.id]?'data:image/png;base64,'+icons['i'+a.id]:'10.png';
+            document.title = a['name']+' - RuGame J2ME Archive'
             setField(a,'name','appTitle');
             setField(a,'vie','appViews');
             setField(a,'dwn','appDls');
             setField(a,'cmm','appComments');
             setField(a,'rating','appRating','rtg');
-            $('#appLink').href ='http://rugame.mobi/'+(cf=='cgames'?'china/':'game/')+a.id;
+            $('#appLink').href ='https://web.archive.org/web/http://rugame.mobi/'+(cf=='cgames'?'china/':'game/')+a.id;
             p1.MaterialProgress.setProgress(a.rating.ups*100/(parseInt(a.rating.ups)+parseInt(a.rating.dws)));
             ('s3D' in a && a['s3D'])?$('#s3D').classList.remove('hidden'):$('#s3D').classList.add('hidden');
             ('bt' in a && a['bt'])?$('#sBT').classList.remove('hidden'):$('#sBT').classList.add('hidden')
@@ -208,11 +209,26 @@ if(check()){ //es6
                     }
                     let link = localLinks?folder+'/files/'+l.file:l.url;
                     dlc+=`
-                    <a href="${link}" onclick="getMLink(event,'${l.file}')" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
+                    <a href="${link}" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
                     <i class="material-icons">file_download</i>${l.type}
                     </a>
                     <div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t+'_'+i}">${l.file}<br>${size}</div>
                     `;
+                    if(l.type != 'JAD'){
+                        dlc+=`<a href="${link}" onclick="getMLink(event,'${l.file}')" target="_blank" class="mdl-cell mdl-cell--5-col ai">
+                        <i class="material-icons">cloud_download</i>[MEGA]
+                        </a>
+                        <a onclick="prompt(locale.copy,'${l.file}')" href="https://web.archive.org/web/*/rugame.mobi/game/*" target="_blank" class="mdl-cell mdl-cell--5-col ai">
+                        <i class="material-icons">find_in_page</i>[WA]
+                        </a>
+                        <a href="https://google.com/search?q=${encodeURI('"'+l.file+'"')}" target="_blank" class="mdl-cell mdl-cell--5-col ai">
+                        <i class="material-icons">find_in_page</i>[G]
+                        </a>
+                        <a href="https://yandex.com/search?text=${encodeURI('"'+l.file+'"')}" target="_blank" class="mdl-cell mdl-cell--5-col ai">
+                        <i class="material-icons">find_in_page</i>[Y]
+                        </a>
+                        `
+                    }
                 }
                 dlc+='</div>'
             }
@@ -220,7 +236,9 @@ if(check()){ //es6
             $('#dls').innerHTML=dlc;
             setTimeout(componentHandler.upgradeDom, 150);
             openTheBox();
-        });
+        }).catch(()=>{
+            alert(locale.nodata)
+        })
     }
     function setDesc(o){
         var sc = '';
@@ -245,18 +263,33 @@ if(check()){ //es6
     function closeTheBox(){
         $('#infobox').classList.add('hidden');
         window.location.hash="#"
+        document.title = 'RuGame J2ME Archive'
     }
     function openTheBox(){
         $('#infobox').classList.remove('hidden');
         $('#lybox').scroll(0,0);
+    }
+    let vkinit = false
+    function showComments(){
+        $("#tab_-1").click()
+        if(!vkinit){
+            VK.init({apiId: 0x4F9438, onlyWidgets: true});
+            VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
+            VK.Widgets.Poll("vk_poll", {}, "287271480_307283ab502526db03");
+            vkinit = true;
+        }
     }
     setTimeout(()=>{
         for(let folder in locale.folders){
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+locale.folders[folder]);
             }
             addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:alert(locale.about2)`,'me-about');
+            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_-2").click()','me-comments');
+            if(locale.l=='ru'){
+                addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:showComments()','me-comments');
+            }
         if(window.location.hash.length>1){
-            selectSection(parseHash(window.location.hash)[0])
+            selectSection(parseHash(window.location.hash)[0]||'applications')
         }else{
             selectSection('applications');
         }

@@ -30,9 +30,18 @@ locales = {
             "cgames": "Chinese Games"
         },
         about:'About',
-        about2:'This is a j2me game catalogue, created to backup all the info about all J2ME ROMS from rugame.mobi. See readme.md for more info.',
+        about2:'This is a j2me game catalogue, created to backup all the info about all J2ME ROMS from rugame.mobi. This project does not include any game files. If you want to use this project with your local files, set the variable localLinks to true.',
         all:'ALL',
-        top:'TOP'
+        top:'TOP',
+        apps: 'apps',
+        files: 'files',
+        data: 'of data',
+        ldb: 'list DB',
+        idb: 'icon DB',
+        scdb:'image DB',
+        tdb: 'info DB',
+        copy: 'Copy the filename into the filter, after web archive loads all the files. It might take a while',
+        nodata: 'This app is unavailable'
     },
     ru:{
         l:'ru',
@@ -65,9 +74,20 @@ locales = {
             "cgames": "China-игры"
         },
         about:'О сервисе',
-        about2:'Данный проект был разработан с целью архивирования данных о всех доступных j2me-приложениях с сайта rugame.mobi, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Также разработчик не несет ответственности за все предоставленные данные и файлы в папке all. Подробнее о бэкапе сайта в readme.md . Для работы с данным сервисом требуется современный брауезер с поддержкой ES6',
+        about2:'Данный проект был разработан с целью архивирования данных о всех доступных j2me-приложениях с сайта rugame.mobi, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Разработчик не несет ответственности за все данные и файлы этого проекта. Данный проект не содержит самих приложений, а лишь предоставляет их информационную базу о них. Авторские права на приложения принадлижат их разработчикам.  Для работы с данным сервисом требуется современный брауезер. Если вы хотите использовать каталог локально, вместе со скачанными файлами, установите значение переменной localLinks на true. Файлы должны лежать в папке files каждого раздела.',
         all:'ВСЕ',
-        top:'ТОП'
+        top:'ТОП',
+        comments: 'Обсуждение',
+        stats: 'Статистика',
+        apps: 'мидлетов',
+        files: 'файлов',
+        data: 'данных',
+        ldb: 'БД списков',
+        idb: 'БД иконок',
+        scdb:'БД скринов',
+        tdb: 'БД текста',
+        copy: 'скопируйте имя файла в фильтр, после того как веб-архив загрузит весь список файлов (на это может уйти больше минуты)',
+        nodata: 'информация о данном приложении недоступна.'
     }
 }
 var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en
@@ -81,7 +101,7 @@ if(!check()){
 }
 function addTab(type,id,name,hidden){
     hidden  = hidden ? ' hidden':''
-    let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" href="#${type}_${id}"> ${name} </a>`
+    let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${id}" href="#${type}_${id}"> ${name} </a>`
     let panel = `<section class="mdl-layout__tab-panel" id="${type}_${id}"><ul class="page-content mdl-list"></ul></section>`
     panelhtml += panel + '\n'
     tabhtml += tab + '\n'
@@ -97,6 +117,8 @@ function addTabs(){
             addTab(cat,tab[0],tab[1],true)
         }
     }
+    addTab('t','-1','chat',true)
+    addTab('t','-2','stats',true)
     return tabhtml
 }
 function addTooltips(){
@@ -104,6 +126,30 @@ function addTooltips(){
         tthtml+= `<div class="mdl-tooltip" data-mdl-for="${tt}">${locale.tooltips[tt]}</div>`
     }
     return tthtml
+}
+function addStats(){
+    let html = '';
+    function addblock(){html+='<div class="mdl-grid"><div class="mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">';}
+    function closeblock(){html+='</div></div>'}
+    function ast(ic,n,txt){
+        html+=`
+        <a href="#"class="mdl-cell mdl-cell--5-col ai">
+        <i class="material-icons">${ic}</i>${n}<br><small>${txt}</small>
+        </a>`
+    }
+    addblock()
+    ast('games',11212,locale.apps)
+    ast('insert_drive_file',58830,locale.files)
+    ast('storage','25+GB',locale.data)
+    closeblock()
+    addblock()
+    ast('reorder','372KB',locale.ldb)
+    ast('portrait','10MB',locale.idb)
+    ast('important_devices','24MB',locale.scdb)
+    ast('dns','45MB',locale.tdb)
+    closeblock()
+    html+='</div></div>'
+    return html
 }
 function relocate(hash){
     document.location.hash=hash;
@@ -146,8 +192,10 @@ function initialize(){
     window.alltabs.innerHTML += addTabs()
     window.tooltips.innerHTML += addTooltips()
     window.lists.innerHTML += panelhtml
+    document.querySelector('#t_-2').innerHTML=addStats()
     window.addEventListener("hashchange", hashHangler);
     loadScript("https://code.getmdl.io/1.3.0/material.min.js").then(()=>{
+        loadScript("https://vk.com/js/api/openapi.js?121")
         loadScript("/main.js")
     })
 }
