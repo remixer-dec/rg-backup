@@ -36,6 +36,8 @@ if(check()){ //es6
         $(to).appendChild(item);
     }
     function selectSection(folder){
+        $('.mds').classList.remove('mds')
+        $('#me-'+folder).classList.add('mds')
         if(cf == folder){return}
         document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.add('hidden')});
         cf = folder;
@@ -77,8 +79,8 @@ if(check()){ //es6
                     icon = '10.png'
                 }
                 list += `
-                <li class="mdl-list__item">
-                  <span class="mdl-list__item-primary-content" onclick="relocate('#/${scf()}/${app[0]}')">
+                <li class="mdl-list__item" onclick="relocate('#/${scf()}/${app[0]}')">
+                  <span class="mdl-list__item-primary-content">
                   <img class="mdl-list__item-icon appic" data-src="${icon}">
                   <span class="mdl-list__item-text-body">${app[1]}</span>
                   </span>
@@ -275,16 +277,16 @@ if(check()){ //es6
         if(!vkinit){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
-            VK.Widgets.Poll("vk_poll", {}, "287271480_307283ab502526db03");
+            VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
             vkinit = true;
         }
     }
     setTimeout(()=>{
         for(let folder in locale.folders){
-                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+locale.folders[folder]);
+                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+folder);
             }
             addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:alert(locale.about2)`,'me-about');
-            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_-2").click()','me-comments');
+            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_-2").click()','me-stats');
             if(locale.l=='ru'){
                 addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:showComments()','me-comments');
             }
