@@ -278,6 +278,7 @@ if(check()){ //es6
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
             VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
+            $("#t_-1").innerHTML+='<iframe src="https://twitch.tv/rugame_/chat"/>'
             vkinit = true;
         }
     }
