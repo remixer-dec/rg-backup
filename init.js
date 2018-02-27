@@ -61,8 +61,17 @@ function scf(bw){
     return bw?(bw=='apps'?'applications':bw):(cf[0]=='a'?'apps':cf);
 }
 function parseHash(url){
+    if(url.startsWith('#')){
+        url=window.location.origin+'/'+url
+    }
     let h = new URL(url).hash.substr(1)
     let type = h.match(/^\/(apps|games|cgames)\/([0-9]+)$/i)
+    let bug = h.match(/applications_all/i)
+    if(bug){
+        console.log('unknown MDL caching  bug!')
+        setTimeout(componentHandler.upgradeDom,300)
+        setTimeout(()=>{$('.'+cf+'-tab').click()},500);
+    }
     if(type){
         let at = scf(type[1])
         let id = parseInt(type[2])
@@ -81,15 +90,24 @@ function hashHangler(e){
     locate(e.newURL);
 }
 function initialize(){
-    function loadScript(src){
-        var script = document.createElement('script')
-        script.src = src
-        var p = new Promise((rs,rj)=>{
-            script.onload = () => rs()
-            script.onerror = () => rj()
+    function addElement(e){
+        let p = new Promise((rs,rj)=>{
+            e.onload = () => {rs();console.log('Loaded:'+(e.href||e.src))}
+            e.onerror = () => rj()
         })
-        document.head.appendChild(script)
+        document.head.appendChild(e)
         return p;
+    }
+    function loadScript(src){
+        let script = document.createElement('script')
+        script.src = src
+        return addElement(script)
+    }
+    function loadStyle(src){
+        let st = document.createElement( "link" );
+        st.rel = "stylesheet";
+        st.href = src;
+        return addElement(st)
     }
     document.getElementsByTagName('html')[0].lang = locale.l
     window.alltabs.innerHTML += addTabs()
@@ -98,8 +116,12 @@ function initialize(){
     document.querySelector('#t_-2').innerHTML=addStats()
     window.addEventListener("hashchange", hashHangler);
     loadScript("https://code.getmdl.io/1.3.0/material.min.js").then(()=>{
+        Promise.all([
+            loadStyle("https://code.getmdl.io/1.3.0/material.light_green-blue.min.css"),
+            loadStyle("style.min.css")]).then(()=>{
+                loadScript("/main.js")
+            })
         loadScript("https://vk.com/js/api/openapi.js?121")
-        loadScript("/main.js")
     })
 }
 setTimeout(initialize,1)

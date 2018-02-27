@@ -41,7 +41,10 @@ locales = {
         scdb:'image DB',
         tdb: 'info DB',
         copy: 'Copy the filename into the filter, after web archive loads all the files. It might take a while',
-        nodata: 'This app is unavailable'
+        nodata: 'This app is unavailable',
+        arc0:'This file is named as "',
+        arc1:'" and is probably located in the following parts of archive: ',
+        arc2:'" and is probably located in the following part of archive: '
     },
     ru:{
         l:'ru',
@@ -87,7 +90,10 @@ locales = {
         scdb:'БД скринов',
         tdb: 'БД текста',
         copy: 'скопируйте имя файла в фильтр, после того как веб-архив загрузит весь список файлов (на это может уйти больше минуты)',
-        nodata: 'информация о данном приложении недоступна.'
+        nodata: 'информация о данном приложении недоступна.',
+        arc0:'Данный файл (',
+        arc1:'), скорее всего, находится между частями ',
+        arc2:'), скорее всего, находится в части архива №'
     }
 }
 var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en
