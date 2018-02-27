@@ -7,16 +7,16 @@ locales = {
             applications:[
                 [3482,'ARCHIVERS'], [3483,'MULTIMEDIA'], [3484,'INTERNET'], [3485,'GPS'], [3486,'SYSTEM'], [3738,'MAPS'],
                 [3739,'TRANSLATORS'], [4330,'JOKES'], [4715,'OTHER'], [75081,'EMULATORS'], [2171,'SMS COLLECTIONS'],
-                [10727,'MESSEGENRS'], [10732,'OFFICE'], [5733,'BLUETOOTH'], [10810,'NEWS RSS WEATHER'],
+                [10727,'MESSENGERS'], [10732,'OFFICE'], [5733,'BLUETOOTH'], [10810,'NEWS RSS WEATHER'],
                 [10641,'GUIDES JOURNALS'], [10645,'ALARMS CLOCKS'], [13816,'STUDY CALCULATORS'], [22133,'SCREENSAVERS']
             ],
             games:[
                 [3,'ARCADE'], [2,'ACTION'], [4,'CARDGAMES'], [5,'ONLINE'], [6,'RACING'], [7,'FIGHTING'], [8,'QUESTS'], [9,'RPG'], [10,'LOGICAL'],
-                [6920,'TABLE'], [7169,'ADVENTURES'], [7135,'SIMULATORS'], [11,'STRATEGIES'], [12,'SHOOTERS'], [13,'SPORTS']
+                [6920,'TABLE'], [7169,'ADVENTURES'], [7135,'SIMULATORS'], [11,'STRATEGY'], [12,'SHOOTERS'], [13,'SPORTS']
             ],
             cgames:[
                 [195,'CARDGAMES'], [12,'ARCADE'], [2,'ACTION'], [328,'RACING'], [17,'FIGHTING'], [19,'QUESTS'], [13,'LOGICAL'],
-                [389,'TABLE'], [4,'ONLINE'], [1513,'ADVENTURES'], [15,'RPG'], [358,'SIMULATORS'], [14,'SPORTS'], [7,'STRATEGIES'], [6,'SHOOTERS']
+                [389,'TABLE'], [4,'ONLINE'], [1513,'ADVENTURES'], [15,'RPG'], [358,'SIMULATORS'], [14,'SPORTS'], [7,'STRATEGY'], [6,'SHOOTERS']
             ]
         },
         tooltips:{
@@ -30,7 +30,7 @@ locales = {
             "cgames": "Chinese Games"
         },
         about:'About',
-        about2:'This is a j2me game catalogue, created to backup all the info about all J2ME ROMS from rugame.mobi. This project does not include any game files. If you want to use this project with your local files, set the variable localLinks to true.',
+        about2:'This is a j2me game catalogue, created to backup all the info about J2ME ROMS from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files. If you want to use this project with your local files, set the variable localLinks to true.',
         all:'ALL',
         top:'TOP',
         apps: 'apps',
@@ -44,7 +44,13 @@ locales = {
         nodata: 'This app is unavailable',
         arc0:'This file is named as "',
         arc1:'" and is probably located in the following parts of archive: ',
-        arc2:'" and is probably located in the following part of archive: '
+        arc2:'" and is probably located in the following part of archive: ',
+        traffic:'This app loads a lot of data every time you reload it. We do not recommend to enable graphical content if you have limited data plan.',
+        icons:'icons (1-10mb)',
+        screenshots:'screenshots (6-24mb)',
+        save:'save settings',
+        cache:'caching',
+        reload:'relod the app?'
     },
     ru:{
         l:'ru',
@@ -77,7 +83,7 @@ locales = {
             "cgames": "China-игры"
         },
         about:'О сервисе',
-        about2:'Данный проект был разработан с целью архивирования данных о всех доступных j2me-приложениях с сайта rugame.mobi, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Разработчик не несет ответственности за все данные и файлы этого проекта. Данный проект не содержит самих приложений, а лишь предоставляет их информационную базу о них. Авторские права на приложения принадлижат их разработчикам.  Для работы с данным сервисом требуется современный брауезер. Если вы хотите использовать каталог локально, вместе со скачанными файлами, установите значение переменной localLinks на true. Файлы должны лежать в папке files каждого раздела.',
+        about2:'Данный проект был разработан с целью архивирования данных обо всех доступных j2me-приложениях с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлижат их разработчикам. Для работы с данным сервисом требуется современный браузер.',
         all:'ВСЕ',
         top:'ТОП',
         comments: 'Обсуждение',
@@ -93,11 +99,19 @@ locales = {
         nodata: 'информация о данном приложении недоступна.',
         arc0:'Данный файл (',
         arc1:'), скорее всего, находится между частями ',
-        arc2:'), скорее всего, находится в части архива №'
+        arc2:'), скорее всего, находится в части архива №',
+        traffic:'Данный сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загруку графического контента',
+        icons:'иконки (1-10мб)',
+        screenshots:'скриншоты (6-24мб)',
+        save:'сохранить',
+        cache:'кэшировать',
+        reload: 'перезагрузить для применения изменений?'
     }
 }
 var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en
 function check(){"use strict";try{eval("let es6 = (x)=>x+`${x}`")}catch(a){return!1}return!0}
 if(!check()){
     alert(locale.notSupported)
+} else{
+    document.querySelectorAll('.lc').forEach(function(e){e.innerHTML=locale[e.innerHTML]})
 }

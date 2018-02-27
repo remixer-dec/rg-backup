@@ -3,7 +3,10 @@ if(check()){ //es6
     setTimeout(()=>window.splash.remove(),1000)
     componentHandler.upgradeDom()
     var localLinks = false;
-    var screenshots = true;
+    var screenshots = localStorage['rg-screenshots'] || true;
+    screenshots = screenshots == 'true'
+    var icons = localStorage['rg-icons'] || true;
+    icons = icons == 'true'
     var cf = '' //current folder
     var $ = (q) => document.querySelector(q);
     var loaded = [];
@@ -38,6 +41,15 @@ if(check()){ //es6
         componentHandler.upgradeElement(item);
         $(to).appendChild(item);
     }
+    function loadScreenshots(folder){
+        if(screenshots){
+            fetchJSON(cf+'/data/screenshots.json').then((sc)=> {
+                window['scr_'+folder] = sc;
+                loaded[folder].confirm()
+                loaded[folder].confirmed = 1
+            });
+        }
+    }
     function selectSection(folder){
         $('.mds').classList.remove('mds')
         $('#me-'+folder).classList.add('mds')
@@ -45,29 +57,40 @@ if(check()){ //es6
         document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.add('hidden')});
         cf = folder;
         document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.remove('hidden')});
-        if(loaded.indexOf(folder)== -1){ //load only once
+        if(!(folder in loaded)){ //load only once
         $('#spinner').classList.remove('hidden');
-        loaded.push(folder);
+        loaded[folder] = {confirmed:0}
+        loaded[folder].all = new Promise((res,rej)=>{loaded[folder].confirm = res})
+        if(window.location.hash.length > 1){
+            setTimeout(locate,1,window.location.href)
+        }
             fetchJSON(folder+'/data/cats.json').then((j)=>{
-                fetchJSON(cf+'/data/icons.json').then((ic)=>{
-                    if(screenshots){
-                        fetchJSON(cf+'/data/screenshots.json').then((sc)=> {
-                            window['scr_'+folder] = sc;
-                            if(window.location.hash.length > 1){
-                                setTimeout(locate,1,window.location.href)
-                            }
-                        });
-                    }
-                    window['icons_'+folder] = ic;
-                    all = '';
-                    tt = ttt = 0;
-                    setTimeout(loadAppList,tt,j,ic);
+                tt = ttt = 0;
+                all = '';
+                if(icons){
+                    fetchJSON(cf+'/data/icons.json').then((ic)=>{
+                        loadScreenshots(folder)
+                        window['icons_'+folder] = ic;
+                        setTimeout(loadAppList,tt,j,ic);
+                        setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
+                    });
+                } else{
+                    loadScreenshots(folder)
+                    setTimeout(loadAppList,tt,j,[]);
                     setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-                    //$('.mdl-layout__tab-bar-right-button').classList.add('is-active')
-                });
+                }
             });
         } else {
             $('.'+cf+'-tab').click();
+        }
+    }
+    function autoSelectSection(){
+        cscreenshots.checked == screenshots? 1 : cscreenshots.parentElement.click()
+        cicons.checked == icons? 1 : cicons.parentElement.click()
+        if(window.location.hash.length>1){
+            selectSection(parseHash(window.location.hash)[0]||'applications')
+        }else{
+            selectSection('applications');
         }
     }
     function loadAppList(cats,ic){
@@ -273,7 +296,7 @@ if(check()){ //es6
                     }
                     let link = localLinks?folder+'/files/'+l.file:l.url;
                     dlc+=`
-                    <a href="${link}" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
+                    <a href="${link}" rel="noreferrer" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
                     <i class="material-icons">file_download</i>${l.type}
                     </a>
                     <div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t+'_'+i}">${l.file}<br>${size}</div>
@@ -302,18 +325,23 @@ if(check()){ //es6
             }
             $('#dls').innerHTML=dlc;
             setTimeout(componentHandler.upgradeDom, 150);
-            openTheBox();
-        }).catch(()=>{
+            openTheBox('thebox');
+        }).catch((reason)=>{
             alert(locale.nodata)
         })
     }
     function setDesc(o){
         var sc = '';
         if('desc' in o){
-            if(screenshots&&('i'+o.id in window['scr_'+cf])){
-                sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
+            if(!loaded[cf].all.confidmed){
+                $('#appDesc').innerHTML = sc+b64u(o['desc']);
             }
-            $('#appDesc').innerHTML = sc+b64u(o['desc']);
+            loaded[cf].all.then((s)=>{
+                if(screenshots&&('i'+o.id in window['scr_'+cf])){
+                    sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
+                }
+                $('#appDesc').innerHTML = sc+b64u(o['desc']);
+            })
         }
     }
     function setField(obj,prp,fld,sp) {
@@ -327,19 +355,23 @@ if(check()){ //es6
             $('#'+fld).innerHTML = '?';
         }
     }
-    function closeTheBox(){
+    function closeTheBox(b){
         $('#infobox').classList.add('hidden');
-        window.location.hash="#"
+        document.querySelectorAll('.box').forEach((h)=>{h.classList.add('hidden')})
+        if(!b){
+            window.location.hash="#"
+        }
         document.title = 'RuGame J2ME Archive'
     }
-    function openTheBox(){
+    function openTheBox(id){
+        $('#'+id).classList.remove('hidden');
         $('#infobox').classList.remove('hidden');
         $('#lybox').scroll(0,0);
     }
     let vkinit = false
     function showComments(){
         $("#tab_-1").click()
-        if(!vkinit){
+        if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
             VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
@@ -347,19 +379,32 @@ if(check()){ //es6
             vkinit = true;
         }
     }
+    function saveConfig(){
+        localStorage['rg-icons'] = icons = cicons.checked
+        localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
+        localStorage['intro'] = 1
+        closeTheBox(1)
+        if(cf==''){
+            autoSelectSection()
+        } else{
+            if(confirm(locale.reload)){
+                window.location.reload()
+            }
+        }
+    }
     setTimeout(()=>{
         for(let folder in locale.folders){
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+folder);
             }
-            addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:alert(locale.about2)`,'me-about');
+            addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:openTheBox('about');`,'me-about');
             addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_-2").click()','me-stats');
             if(locale.l=='ru'){
                 addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:showComments()','me-comments');
             }
-        if(window.location.hash.length>1){
-            selectSection(parseHash(window.location.hash)[0]||'applications')
-        }else{
-            selectSection('applications');
+        if(localStorage.intro || navigator.userAgent.match('bot')){
+            autoSelectSection()
+        } else{
+            openTheBox('about')
         }
     }, 1200);
 }
