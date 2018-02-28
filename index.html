@@ -23,7 +23,7 @@
 				<header class="mdl-layout__header">
 				<i class="material-icons mdl-layout-icon">settings</i>
 				<div class="mdl-layout__header-row">
-					<span class="mdl-layout-title"><span id="ab1" class="lc">about</span>
+					<span class="mdl-layout-title"><span id="ab1" class="lc">about</span></span>
 				</div>
 				</header>
 				<div class="mdl-grid">
@@ -32,18 +32,22 @@
 						<div class="lc">about2</div>
 						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons">wifi</i></div>
 						<div class="lc">traffic</div>
-						<div id="config" class="mdl-grid">
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect mdl-cell mdl-cell--4-col" for="cicons">
+						<div id="config" class="mdl-grid" style="text-align:center">
+							<div class="mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet">
+							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cicons">
 								<input type="checkbox" id="cicons" class="mdl-switch__input" checked>
 								<span class="mdl-switch__label lc">icons</span>
 							</label>
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect mdl-cell mdl-cell--4-col mdl-cell--2-offset" for="cscreenshots">
+							</div>
+							<div class=" mdl-cell mdl-cell--4-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
+							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cscreenshots">
 								<input type="checkbox" id="cscreenshots" class="mdl-switch__input" checked>
 								<span class="mdl-switch__label lc">screenshots</span>
 							</label>
+							</div>
 						</div>
 						<br><br>
-						<div class="mdl-cell mdl-cell--12-col"style="text-align:center">
+						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
 							<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col lc" onclick="saveConfig()">save</button><br>
 							<!--<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col lc">cache</button>-->
 						</div>

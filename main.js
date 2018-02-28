@@ -23,7 +23,7 @@ if(check()){ //es6
         });
     }
     function b64u(str) { //base64 unicode
-        return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+        return decodeURIComponent(atob(str).split('').map(function(c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
     }
@@ -66,7 +66,6 @@ if(check()){ //es6
         }
             fetchJSON(folder+'/data/cats.json').then((j)=>{
                 tt = ttt = 0;
-                all = '';
                 if(icons){
                     fetchJSON(cf+'/data/icons.json').then((ic)=>{
                         loadScreenshots(folder)
@@ -95,8 +94,9 @@ if(check()){ //es6
     }
     function loadAppList(cats,ic){
         fetchJSON(cf+'/data/v2data.json').then((al)=>{
+            let all = '';
             for(let cat of cats){
-            var list = '';
+            let list = '';
             for(var app of al[cat.id]){
                 let icon = ic['i'+app[0]];
                 if(icon){
@@ -132,6 +132,7 @@ if(check()){ //es6
                     ttt+=250
                     setTimeout(()=>{
                         $('#spinner').classList.add('hidden')
+                        all = undefined
                     },ttt);
                 }
         }});
@@ -331,28 +332,32 @@ if(check()){ //es6
         })
     }
     function setDesc(o){
-        var sc = '';
+        let sc = '';
+        let desc = b64u(o['desc']);
         if('desc' in o){
             if(!loaded[cf].all.confidmed){
-                $('#appDesc').innerHTML = sc+b64u(o['desc']);
+                $('#appDesc').innerHTML = desc;
             }
             loaded[cf].all.then((s)=>{
                 if(screenshots&&('i'+o.id in window['scr_'+cf])){
                     sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
                 }
-                $('#appDesc').innerHTML = sc+b64u(o['desc']);
+                $('#appDesc').innerHTML = sc+desc
             })
         }
     }
+    var itx = (()=>'innerText' in document.body ? 'innerText' : 'innerHTML')()
     function setField(obj,prp,fld,sp) {
+        let f = $('#'+fld)
+        let p = itx
         if(prp in obj){
             if(sp && sp in obj[prp]){
-                $('#'+fld).innerHTML = obj[prp][sp];
+                f[p] = obj[prp][sp];
             } else{
-                $('#'+fld).innerHTML = obj[prp];
+                f[p] = obj[prp];
             }
         } else{
-            $('#'+fld).innerHTML = '?';
+            f[p] = '?';
         }
     }
     function closeTheBox(b){
