@@ -92,7 +92,7 @@ function hashHangler(e){
 function initialize(){
     function addElement(e){
         let p = new Promise((rs,rj)=>{
-            e.onload = () => {rs();console.log('Loaded:'+(e.href||e.src))}
+            e.onload = () => {rs()}
             e.onerror = () => rj()
         })
         document.head.appendChild(e)
@@ -116,9 +116,14 @@ function initialize(){
     document.querySelector('#t_-2').innerHTML=addStats()
     window.addEventListener("hashchange", hashHangler);
     loadScript("https://code.getmdl.io/1.3.0/material.min.js").then(()=>{
-        Promise.all([
+        let items = [
             loadStyle("https://code.getmdl.io/1.3.0/material.light_green-blue.min.css"),
-            loadStyle("style.min.css")]).then(()=>{
+            loadStyle("style.min.css")
+        ]
+        if(typeof fetch != 'function'){
+            items.push(loadScript('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js'))
+        }
+        Promise.all(items).then(()=>{
                 loadScript("/main.js")
             })
         loadScript("https://vk.com/js/api/openapi.js?121")
