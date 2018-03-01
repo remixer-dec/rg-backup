@@ -40,6 +40,7 @@ locales = {
         idb: 'icon DB',
         scdb:'image DB',
         tdb: 'info DB',
+        stats: 'Stats',
         copy: 'Copy the filename into the filter, after web archive loads all the files. It might take a while',
         nodata: 'This app is unavailable',
         arc0:'This file is named as "',

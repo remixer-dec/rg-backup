@@ -4,7 +4,7 @@ let tthtml = ''
 
 function addTab(type,id,name,hidden){
     hidden  = hidden ? ' hidden':''
-    let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${id}" href="#${type}_${id}"> ${name} </a>`
+    let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${type}_${id}" href="#${type}_${id}"> ${name} </a>`
     let panel = `<section class="mdl-layout__tab-panel" id="${type}_${id}"><ul class="page-content mdl-list"></ul></section>`
     panelhtml += panel + '\n'
     tabhtml += tab + '\n'
