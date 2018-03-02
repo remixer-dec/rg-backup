@@ -375,7 +375,7 @@ if(check()){ //es6
     }
     let vkinit = false
     function showComments(){
-        $("#tab_-1").click()
+        $("#tab_t_-1").click()
         if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
@@ -402,7 +402,7 @@ if(check()){ //es6
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+folder);
             }
             addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:openTheBox('about');`,'me-about');
-            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_-2").click()','me-stats');
+            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_t_-2").click()','me-stats');
             if(locale.l=='ru'){
                 addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:showComments()','me-comments');
             }

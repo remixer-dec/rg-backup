@@ -1,4 +1,4 @@
-var l = window.navigator.languages||[window.navigator.language]
+var l = window.navigator.languages||[window.navigator.language.substr(0,2).toLowerCase()]
 locales = {
     en:{
         l:'en',
