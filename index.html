@@ -6,15 +6,33 @@
 	<meta name="apple-mobile-web-app-title" content="RG-J2ME-Backup">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="RG-J2ME-Backup">
+	<meta name="description" content="J2ME ROMS Database. Apps, games, search. JAR / JAD"/>
     <meta name="theme-color" content="#8BC34A">
     <link rel='icon' href='10.png'>
 	<title>RuGame J2ME Archive</title>
+	<style>
+	#splash{
+		background:#8BC34A;width:100%;height:100%;position:fixed;
+		z-index:100000;top:0;transition:top .4s;left:0;top:0;
+		animation: upw 5s ease-in-out forwards;
+		border-bottom:100px solid white;
+	}
+	.spf{
+		top:-100% !important;
+		border-bottom: none !important;
+	}
+	@keyframes upw {
+		0%{transform:translateY(0)}
+		100%{transform:translateY(-20%)}
+	}
+	</style>
 </head>
 <body>
-	<div id="splash" style="background:#8BC34A;width:100%;height:100%;position:fixed;z-index:100000;transition:opacity .5s;left:0;top:0"></div>
+	<div id="splash"></div>
 	<div id="spinner">
 		<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active"></div>
 	</div>
+	<!--noindex-->
 	<div id="infobox" class="hidden">
 		<div class="boxbg"  onclick="closeTheBox()"></div>
 		<i class="material-icons" id="closethebox" onclick="closeTheBox()">close</i>
@@ -118,6 +136,7 @@
 			</div>
 		</div>
 	</div>
+	<!--/noindex-->
 	<div class="container">
 		<div id="ly" class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
 		            mdl-layout--fixed-header">

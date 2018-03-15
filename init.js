@@ -77,6 +77,9 @@ function parseHash(url){
         let id = parseInt(type[2])
         return [at,id]
     } else{
+        if(h==''){
+            closeTheBox()
+        }
         return false;
     }
 }
@@ -92,7 +95,7 @@ function hashHangler(e){
 function initialize(){
     function addElement(e){
         let p = new Promise((rs,rj)=>{
-            e.onload = () => {rs()}
+            e.onload = () => rs()
             e.onerror = () => rj()
         })
         document.head.appendChild(e)
@@ -124,7 +127,7 @@ function initialize(){
             items.push(loadScript('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js'))
         }
         Promise.all(items).then(()=>{
-                loadScript("/main.js")
+                loadScript("main.js")
             })
         loadScript("https://vk.com/js/api/openapi.js?121")
     })

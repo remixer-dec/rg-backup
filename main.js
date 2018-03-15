@@ -1,6 +1,6 @@
 if(check()){ //es6
-    setTimeout(()=>{window.splash.style.opacity = 0},500)
-    setTimeout(()=>window.splash.remove(),1000)
+    setTimeout(()=>{window.splash.classList.add('spf')},500)
+    setTimeout(()=>window.splash.remove(),21000)
     componentHandler.upgradeDom()
     var localLinks = false;
     var screenshots = localStorage['rg-screenshots'] || true;
@@ -244,6 +244,9 @@ if(check()){ //es6
                 }
             }
         }
+        if(cf=='cgames' && filename.match('\.[0-9]+\.jar')){
+            alert('A number in the filename might be not correct.')
+        }
         alert(locale.arc0 + filename + locale.arc2+magicNumber)
     }
     var isAlive = true
@@ -253,7 +256,6 @@ if(check()){ //es6
         f.src='http://rugame.mobi/favicon.ico'
 
     }
-    isRGAlive()
     function getAppInfo(appid,folder){
         if(!folder){
             folder = cf;
@@ -384,6 +386,44 @@ if(check()){ //es6
             vkinit = true;
         }
     }
+    function autoClose(){
+        if (drawerON()){
+            ly.MaterialLayout.toggleDrawer()
+        }
+    }
+    function drawerON(){
+        return ly.MaterialLayout.drawer_.classList.contains('is-visible')
+    }
+    function swipes(a){
+        a = $(a)
+        var gp,grs,grj
+        function touchstart(evt){
+            xDown = evt.touches[0].clientX;
+            yDown = evt.touches[0].clientY;
+            gp = new Promise((rs,rj)=>{
+                grs = rs
+                grj = rj
+            })
+            gp.then((t)=>{
+                if(t<0 && !drawerON()){
+                    ly.MaterialLayout.toggleDrawer()
+                }
+                if(t>0 && drawerON()){
+                    ly.MaterialLayout.toggleDrawer()
+                }
+            })
+        }
+        function touchmove(a){
+                var b=a.touches[0].clientX,c=a.touches[0].clientY,d=xDown-b,e=yDown-c;
+                Math.abs(d)>Math.abs(e)&&(128<d?grs(1):-128>d&&grs(-1))
+            }
+        function touchend(){
+            grs(0)
+        }
+        a.addEventListener('touchstart', touchstart, !1);
+        a.addEventListener('touchmove', touchmove, !1);
+        a.addEventListener('touchend', touchend, !1);
+    }
     function saveConfig(){
         localStorage['rg-icons'] = icons = cicons.checked
         localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
@@ -397,19 +437,31 @@ if(check()){ //es6
             }
         }
     }
+    var menuA = [
+        selectSection,
+        openTheBox,
+        ()=>{$("#tab_t_-2").click()},
+        showComments,
+    ]
+    function clk(arg,id){
+        autoClose()
+        menuA[id](arg)
+    }
     setTimeout(()=>{
         for(let folder in locale.folders){
-                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:selectSection('${folder}')`,'me-'+folder);
-            }
-            addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:openTheBox('about');`,'me-about');
-            addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:$("#tab_t_-2").click()','me-stats');
-            if(locale.l=='ru'){
-                addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:showComments()','me-comments');
-            }
+                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:clk('${folder}',0)`,'me-'+folder);
+        }
+        addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('about',1);`,'me-about');
+        addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,2)','me-stats');
+        if(locale.l=='ru'){
+            addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,3)','me-comments');
+        }
+        swipes('#ly')
         if(localStorage.intro || navigator.userAgent.match('bot')){
             autoSelectSection()
         } else{
             openTheBox('about')
         }
+        setTimeout(isRGAlive,5000)
     }, 1200);
 }
