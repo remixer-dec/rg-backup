@@ -51,7 +51,8 @@ locales = {
         screenshots:'screenshots (6-24mb)',
         save:'save settings',
         cache:'caching',
-        reload:'relod the app?'
+        reload:'relod the app?',
+        alphasort:'alphabeticall sorting'
     },
     ru:{
         l:'ru',
@@ -106,7 +107,8 @@ locales = {
         screenshots:'скриншоты (6-24мб)',
         save:'сохранить',
         cache:'кэшировать',
-        reload: 'перезагрузить для применения изменений?'
+        reload: 'перезагрузить для применения изменений?',
+        alphasort: 'алфавитная сортировка'
     }
 }
 var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en

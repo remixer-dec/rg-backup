@@ -9,6 +9,7 @@
 	<meta name="description" content="J2ME ROMS Database. Apps, games, search. JAR / JAD"/>
     <meta name="theme-color" content="#8BC34A">
     <link rel='icon' href='10.png'>
+    <link rel="manifest" href="manifest.json">
 	<title>RuGame J2ME Archive</title>
 	<style>
 	#splash{
@@ -63,11 +64,20 @@
 								<span class="mdl-switch__label lc">screenshots</span>
 							</label>
 							</div>
-						</div>
-						<br><br>
+							<div style="margin-top:60px">
+							</div>
+							<div class="mdl-grid">
+								<div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons">sort_by_alpha</i></div>
+							</div>
+							<div class=" mdl-cell mdl-cell--12-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
+							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cazsort">
+								<input type="checkbox" id="cazsort" class="mdl-switch__input">
+								<span class="mdl-switch__label lc">alphasort</span>
+							</label>
+							</div>
+						</div><br>
 						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
 							<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col lc" onclick="saveConfig()">save</button><br>
-							<!--<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col lc">cache</button>-->
 						</div>
 					</div>
 				</div>

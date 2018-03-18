@@ -1,0 +1,19 @@
+{
+  "name": "RuGame J2ME Backup",
+  "description": "J2ME ROM Database",
+  "short_name": "RG J2ME",
+  "scope": "/",
+  "icons": [{
+    "src": "icon.png",
+    "sizes": "144x144",
+    "type": "image/png"
+  }],
+  "display": "standalone",
+  "start_url": "/",
+  "serviceworker": {
+    "src": "sw.js",
+    "scope": "/"
+  },
+"theme_color": "#8BC34A",
+"background_color": "#8BC34A"
+}

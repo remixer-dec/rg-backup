@@ -6,6 +6,8 @@ if(check()){ //es6
     var screenshots = localStorage['rg-screenshots'] || true;
     screenshots = screenshots == 'true'
     var icons = localStorage['rg-icons'] || true;
+    var alphasort = localStorage['rg-alphasort'] || false
+    alphasort = alphasort == 'true'
     icons = icons == 'true'
     var cf = '' //current folder
     var $ = (q) => document.querySelector(q);
@@ -92,9 +94,21 @@ if(check()){ //es6
             selectSection('applications');
         }
     }
+    function alphasorter(a,b){
+        if(a[1] < b[1]) return -1
+        if(a[1] > b[1]) return 1
+        return 0;
+    }
     function loadAppList(cats,ic){
         fetchJSON(cf+'/data/v2data.json').then((al)=>{
-            let all = '';
+            if(alphasort){
+                for(let pr in al){
+                    if(pr==0){continue}
+                    al[pr].sort(alphasorter)
+                }
+            }
+            window.al = al
+            let all = []
             for(let cat of cats){
             let list = '';
             for(var app of al[cat.id]){
@@ -104,7 +118,7 @@ if(check()){ //es6
                 } else {
                     icon = '10.png'
                 }
-                list += `
+                let appitem = `
                 <li class="mdl-list__item" onclick="relocate('#/${scf()}/${app[0]}')">
                   <span class="mdl-list__item-primary-content">
                   <img class="mdl-list__item-icon appic" data-src="${icon}">
@@ -115,26 +129,28 @@ if(check()){ //es6
                   </span>
                 </li>
                 `;
+                list += appitem
+                if(cat.id!=0){
+                    all.push([appitem,app[1]])
+                }
             }
             if(cat.id=="0"){cat.id="top"}
-                setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
-                ttt+=20;
-                if(cat.id != 'top'){
-                    all += list;
-                }
-                if(cats[cats.length-1].id==cat.id){
-                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
-                    ttt+=50;
-                    setTimeout(()=>{
-                        document.querySelectorAll('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
-                        document.querySelectorAll('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
-                    },ttt)
-                    ttt+=250
-                    setTimeout(()=>{
-                        $('#spinner').classList.add('hidden')
-                        all = undefined
-                    },ttt);
-                }
+            setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
+            ttt+=20;
+            if(cats[cats.length-1].id==cat.id){
+                all = alphasort?all.sort(alphasorter).map(a=>a[0]).join(''):all.map(a=>a[0]).join('')
+                setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
+                ttt+=50;
+                setTimeout(()=>{
+                    document.querySelectorAll('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
+                    document.querySelectorAll('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
+                },ttt)
+                ttt+=250
+                setTimeout(()=>{
+                    $('#spinner').classList.add('hidden')
+                    all = undefined
+                },ttt);
+            }
         }});
     }
     function insertAppList(el,list,add){
@@ -427,7 +443,8 @@ if(check()){ //es6
     function saveConfig(){
         localStorage['rg-icons'] = icons = cicons.checked
         localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
-        localStorage['intro'] = 1
+        localStorage['rg-intro'] = 1
+        localStorage['rg-alphasort'] = alphasort = cazsort.checked
         closeTheBox(1)
         if(cf==''){
             autoSelectSection()
@@ -447,6 +464,44 @@ if(check()){ //es6
         autoClose()
         menuA[id](arg)
     }
+
+    function registerSW(){
+    	let updateReady = function (worker) {
+        	worker.postMessage({ action: 'refresh' })
+    	}
+    	if('serviceWorker' in navigator && location.protocol === 'https:'){
+    	navigator.serviceWorker.register('./sw.js').then(function (reg) {
+    	    if (!navigator.serviceWorker.controller) {
+    	      return;
+    	    }
+
+    	    if (reg.waiting) {
+    	      updateReady(reg.waiting);
+    	      return;
+    	    }
+    	    if (reg.installing) {
+    	      return;
+    	    }
+
+    	    reg.addEventListener('updatefound', ()=>{
+    	    	let rfr = (w)=>{
+    	    		worker.addEventListener('statechange', ()=>{
+    	    			if(w.state === 'installed'){
+    	    				updateReady(w)
+    	    			}
+    	    		})
+    	    	}
+    	    	rfr(reg.installing)
+    	    })
+    	})
+    	let refreshing
+      	navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      		if (refreshing) return;
+        	window.location.reload();
+        	refreshing = true;
+        });
+        }
+    }
     setTimeout(()=>{
         for(let folder in locale.folders){
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:clk('${folder}',0)`,'me-'+folder);
@@ -457,11 +512,12 @@ if(check()){ //es6
             addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,3)','me-comments');
         }
         swipes('#ly')
-        if(localStorage.intro || navigator.userAgent.match('bot')){
+        if(localStorage['rg-intro'] || navigator.userAgent.match('bot')){
             autoSelectSection()
         } else{
             openTheBox('about')
         }
+        registerSW()
         setTimeout(isRGAlive,5000)
     }, 1200);
 }

@@ -118,9 +118,9 @@ function initialize(){
     window.lists.innerHTML += panelhtml
     document.querySelector('#t_-2').innerHTML=addStats()
     window.addEventListener("hashchange", hashHangler);
-    loadScript("https://code.getmdl.io/1.3.0/material.min.js").then(()=>{
+    loadScript("lib/material.min.js").then(()=>{
         let items = [
-            loadStyle("https://code.getmdl.io/1.3.0/material.light_green-blue.min.css"),
+            loadStyle("lib/material.light_green-blue.min.css"),
             loadStyle("style.min.css")
         ]
         if(typeof fetch != 'function'){
