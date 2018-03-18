@@ -15,7 +15,6 @@ if(check()){ //es6
     var lastinput = 0;
     var tt,ttt;//timers to optimize loading
     function fetchJSON(filename){
-        console.log('loading '+filename)
         return new Promise((rs,rj)=>{
             fetch(filename).then((f)=>{
                 f.json().then((j)=>{
@@ -107,7 +106,6 @@ if(check()){ //es6
                     al[pr].sort(alphasorter)
                 }
             }
-            window.al = al
             let all = []
             for(let cat of cats){
             let list = '';
@@ -154,7 +152,6 @@ if(check()){ //es6
         }});
     }
     function insertAppList(el,list,add){
-        console.log('loading:'+el.parentElement.id);
         el.innerHTML = add?el.innerHTML+list:list;
     }
     function optsearch(){
@@ -171,7 +168,6 @@ if(check()){ //es6
         } else {
             return;
         }
-        console.log('seaching')
         var text = $('#fixed-header-drawer-exp').value;
         var t = new RegExp(text,'im');
         if(text!=''){
