@@ -265,7 +265,7 @@ if(check()){ //es6
     function isRGAlive(){
         let f = new Image()
         f.onerror= () => { isAlive = false }
-        f.src='http://rugame.mobi/favicon.ico'
+        f.src='https://httpsify.xeodou.me/url?redirect=http://rugame.mobi/favicon.ico'
 
     }
     function getAppInfo(appid,folder){
@@ -489,7 +489,7 @@ if(check()){ //es6
     	    	}
     	    	rfr(reg.installing)
     	    })
-    	})
+    	}).catch(e=>console.log('Unable to register serviceWorker!'))
     	let refreshing
       	navigator.serviceWorker.addEventListener('controllerchange', ()=>{
       		if (refreshing) return;

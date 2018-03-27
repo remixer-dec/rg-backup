@@ -1,4 +1,4 @@
-var staticCache = 'rg-main-v1'
+var staticCache = 'rg-main-v2'
 var allCaches = [staticCache]
 
 self.addEventListener('install', (event) => {
@@ -35,9 +35,20 @@ self.addEventListener('activate',(event)=>{
 })
 
 self.addEventListener('fetch', (event)=>{
-  event.respondWith(caches.match(event.request).then((response)=>{
-    return response || fetch(event.request).catch(e=>{ return new Response('{"error":"connection lost"}')})
-  }));
+    let u = event.request.url
+    if(u.match('out.php')){
+        let red = u.match(/\&(http:\/\/.+$)/im)[1]
+        event.respondWith(Response.redirect(red,302))
+    } else if(u.match('/smile/')){
+        let s = u.match(/smile\/([a-z0-9\-_\.\/]+)/i)[1]
+        event.respondWith(fetch('https://httpsify.xeodou.me/url?redirect=http://rugame.mobi/smile/'+s,{ mode: 'no-cors'}))
+    } else{
+        event.respondWith(caches.match(event.request).then((response)=>{
+          return response || fetch(event.request)
+          .then(r=>{return r.status===404?(new Response('404 :(',{status:404})):r})
+          .catch(e=>{return new Response('{"error":"connection lost"}')})
+        }));
+    }
 });
 
 self.addEventListener('message',(event)=>{
@@ -45,4 +56,3 @@ self.addEventListener('message',(event)=>{
     self.skipWaiting()
   }
 })
-
