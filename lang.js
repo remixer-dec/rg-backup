@@ -2,7 +2,7 @@ var l = window.navigator.languages||[window.navigator.language.substr(0,2).toLow
 locales = {
     en:{
         l:'en',
-        notSupported:'Your browser does not support ES6. This app requires it.',
+        notSupported:'Your browser does not support ES6. This app requires it. Please updete your browser if you want to use this project.',
         tabs:{
             applications:[
                 [3482,'ARCHIVERS'], [3483,'MULTIMEDIA'], [3484,'INTERNET'], [3485,'GPS'], [3486,'SYSTEM'], [3738,'MAPS'],
@@ -30,7 +30,7 @@ locales = {
             "cgames": "Chinese Games"
         },
         about:'About',
-        about2:'This is a j2me game catalogue, created to backup all the info about J2ME ROMS from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files. If you want to use this project with your local files, set the variable localLinks to true.',
+        about2:'This is a j2me game catalogue, created to backup all the info about J2ME ROMS from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files.',
         all:'ALL',
         top:'TOP',
         apps: 'apps',
@@ -85,7 +85,7 @@ locales = {
             "cgames": "China-игры"
         },
         about:'О сервисе',
-        about2:'Данный проект был разработан с целью архивирования данных обо всех доступных j2me-приложениях с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлижат их разработчикам. Для работы с данным сервисом требуется современный браузер.',
+        about2:'Данный проект был разработан с целью архивирования данных обо всех доступных j2me-приложениях с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлежат их разработчикам. Для работы с данным сервисом требуется современный браузер.',
         all:'ВСЕ',
         top:'ТОП',
         comments: 'Обсуждение',
@@ -102,7 +102,7 @@ locales = {
         arc0:'Данный файл (',
         arc1:'), скорее всего, находится между частями ',
         arc2:'), скорее всего, находится в части архива №',
-        traffic:'Данный сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загруку графического контента. Отображение иконок также может замедлять сервис во время первичных загрузок.',
+        traffic:'Данный сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загрзуку графического контента. Отображение иконок также может замедлять сервис во время первичных загрузок.',
         icons:'иконки (1-10мб)',
         screenshots:'скриншоты (6-24мб)',
         save:'сохранить',

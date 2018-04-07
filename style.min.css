@@ -8,3 +8,5 @@
 .material-icons.mdl-layout-icon {line-height: 32px;font-size: 30px;transform: translateX(-20px);}
 .mdl-layout__title, .mdl-layout-title{position: absolute}
 .mdl-textfield--expandable{background:#8BC34A;}
+#version{position: absolute;bottom:0;left:0;margin:16px}
+#tglink{display: block;margin: 10px; padding: 10px; color:white; background: #27A5E7;border-radius: 10px; text-align: center; text-decoration: none}

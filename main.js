@@ -257,7 +257,7 @@ if(check()){ //es6
             }
         }
         if(cf=='cgames' && filename.match('\.[0-9]+\.jar')){
-            alert('A number in the filename might be not correct.')
+            alert('Из-за одинаковых имён и отсутствия некоторых файлов, номер файла может не совпадать с указанным.')
         }
         alert(locale.arc0 + filename + locale.arc2+magicNumber)
     }
@@ -394,7 +394,7 @@ if(check()){ //es6
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
             VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
-            $("#t_-1").innerHTML+='<iframe style="width:100%;height:550px" src="https://twitch.tv/rugame_/chat"/>'
+            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=kononru">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/rugame_/chat"/>'
             vkinit = true;
         }
     }
