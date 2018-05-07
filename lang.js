@@ -53,7 +53,7 @@ locales = {
         cache:'caching',
         reload:'relod the app?',
         alphasort:'alphabeticall sorting',
-        performance: 'fix lags turning "all" tab off',
+        pf: 'fix lags turning "all" tab off',
         pferr: 'This tab wad disabled in settings'
     },
     ru:{
@@ -111,7 +111,7 @@ locales = {
         cache:'кэшировать',
         reload: 'перезагрузить для применения изменений?',
         alphasort: 'алфавитная сортировка',
-        performance: 'не использовать вкладку "все" (устраняет лаги)',
+        pf: 'не использовать вкладку "все" (устраняет лаги)',
         pferr: 'эта вкладка была отключена в настройках'
     }
 }
