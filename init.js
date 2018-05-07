@@ -1,6 +1,8 @@
 let tabhtml = ''
 let panelhtml = ''
 let tthtml = ''
+let isblogloaded = false
+let blogposts = []
 
 function addTab(type,id,name,hidden){
     hidden  = hidden ? ' hidden':''
@@ -22,6 +24,7 @@ function addTabs(){
     }
     addTab('t','-1','chat',true)
     addTab('t','-2','stats',true)
+    addTab('t','-3','blog',true)
     return tabhtml
 }
 function addTooltips(){
@@ -66,11 +69,39 @@ function parseHash(url){
     }
     let h = new URL(url).hash.substr(1)
     let type = h.match(/^\/(apps|games|cgames)\/([0-9]+)$/i)
+    let blog = h.match(/\!\/blog\/?([0-9]+)?\/?/i)
     let bug = h.match(/applications_all/i)
     if(bug){
         console.log('unknown MDL caching  bug!')
         setTimeout(componentHandler.upgradeDom,300)
         setTimeout(()=>{$('.'+cf+'-tab').click()},500);
+    }
+    if(blog){
+        cf=cf!='custom'?'custom':cf
+        if(!isblogloaded){
+            showBlogPosts(false)
+            $('#spinner').classList.add('hidden');
+        }
+        if(typeof blog[1] != 'undefined'){
+            setTimeout(()=>{
+                $$('.blogpost').forEach((e)=>{
+                    if(e.id!='blog_'+blog[1]){
+                        e.classList.add('hiddenpost')
+                    } else{
+                        e.classList.remove('hiddenpost')
+                        e.classList.add('bpopened')
+                    }
+                })
+            },120)
+        } else{
+            if($('.bpopened')){
+                $('.bpopened').classList.remove('bpopened')
+                $$('.blogpost').forEach((e)=>{
+                    e.classList.remove('hiddenpost')
+                })
+            }
+        }
+        return ['custom']
     }
     if(type){
         let at = scf(type[1])
@@ -85,11 +116,11 @@ function parseHash(url){
 }
 function locate(url){
     let r = parseHash(url)
-    if(r){
+    if(r && r!='custom'){
         getAppInfo(r[1],r[0])
     }
 }
-function hashHangler(e){
+function hashHandler(e){
     locate(e.newURL);
 }
 function initialize(){
@@ -117,7 +148,7 @@ function initialize(){
     window.tooltips.innerHTML += addTooltips()
     window.lists.innerHTML += panelhtml
     document.querySelector('#t_-2').innerHTML=addStats()
-    window.addEventListener("hashchange", hashHangler);
+    window.addEventListener("hashchange", hashHandler);
     loadScript("lib/material.min.js").then(()=>{
         let items = [
             loadStyle("lib/material.light_green-blue.min.css"),

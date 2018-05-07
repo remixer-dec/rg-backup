@@ -7,10 +7,12 @@ if(check()){ //es6
     screenshots = screenshots == 'true'
     var icons = localStorage['rg-icons'] || true;
     var alphasort = localStorage['rg-alphasort'] || false
+    var noalltab = localStorage['rg-performance'] || false
     alphasort = alphasort == 'true'
     icons = icons == 'true'
     var cf = '' //current folder
     var $ = (q) => document.querySelector(q);
+    $$ = typeof $$ != 'function'? q => document.querySelectorAll(q):$$
     var loaded = [];
     var lastinput = 0;
     var tt,ttt;//timers to optimize loading
@@ -51,13 +53,39 @@ if(check()){ //es6
             });
         }
     }
-    function selectSection(folder){
+    function switchTabs(hide,show){
+        $$(`.${hide}-tab`).forEach(e=>e.classList.add('hidden'));
+        $$(`.${show}-tab`).forEach(e=>e.classList.remove('hidden'));
+    }
+    function switchSelectedMenuItem(item){
         $('.mds').classList.remove('mds')
-        $('#me-'+folder).classList.add('mds')
+        $('#me-'+item).classList.add('mds')
+    }
+    function loadCoreData(folder){
+        fetchJSON(folder+'/data/cats.json').then(j=>{
+            tt = ttt = 0;
+            if(icons){
+                fetchJSON(cf+'/data/icons.json').then(ic=>{
+                    loadScreenshots(folder)
+                    window['icons_'+folder] = ic;
+                    setTimeout(loadAppList,tt,j,ic);
+                    setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
+                });
+            } else{
+                loadScreenshots(folder)
+                setTimeout(loadAppList,tt,j,[]);
+                setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
+            }
+        });
+    }
+    function selectSection(folder){
         if(cf==folder){return}
-        document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.add('hidden')});
+        switchSelectedMenuItem(folder)
+        switchTabs(cf,folder)
         cf = folder;
-        document.querySelectorAll('.'+cf+'-tab').forEach((e)=>{e.classList.remove('hidden')});
+        if(!document.location.hash.match(scf())){
+            relocate('#/'+folder+'/')
+        }
         if(!(folder in loaded)){ //load only once
         $('#spinner').classList.remove('hidden');
         loaded[folder] = {confirmed:0}
@@ -65,21 +93,7 @@ if(check()){ //es6
         if(window.location.hash.length > 1){
             setTimeout(locate,1,window.location.href)
         }
-            fetchJSON(folder+'/data/cats.json').then((j)=>{
-                tt = ttt = 0;
-                if(icons){
-                    fetchJSON(cf+'/data/icons.json').then((ic)=>{
-                        loadScreenshots(folder)
-                        window['icons_'+folder] = ic;
-                        setTimeout(loadAppList,tt,j,ic);
-                        setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-                    });
-                } else{
-                    loadScreenshots(folder)
-                    setTimeout(loadAppList,tt,j,[]);
-                    setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-                }
-            });
+            loadCoreData(folder)
         } else {
             $('.'+cf+'-tab').click();
         }
@@ -87,8 +101,13 @@ if(check()){ //es6
     function autoSelectSection(){
         cscreenshots.checked == screenshots? 1 : cscreenshots.parentElement.click()
         cicons.checked == icons? 1 : cicons.parentElement.click()
+        cazsort.checked == alphasort? 1 : cazsort.parentElement.click()
+        cnoalltab.checked == noalltab? 1 : cnoalltab.parentElement.click()
         if(window.location.hash.length>1){
-            selectSection(parseHash(window.location.hash)[0]||'applications')
+            let h = parseHash(window.location.hash)[0]||'applications'
+            if(h!='custom'){
+                selectSection(h)
+            }
         }else{
             selectSection('applications');
         }
@@ -128,7 +147,7 @@ if(check()){ //es6
                 </li>
                 `;
                 list += appitem
-                if(cat.id!=0){
+                if(cat.id!=0 && !noalltab){
                     all.push([appitem,app[1]])
                 }
             }
@@ -137,11 +156,16 @@ if(check()){ //es6
             ttt+=20;
             if(cats[cats.length-1].id==cat.id){
                 all = alphasort?all.sort(alphasorter).map(a=>a[0]).join(''):all.map(a=>a[0]).join('')
-                setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
+                if(!noalltab){
+                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
+                } else{
+                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,'<center>'+locale.pferr+'</center>');
+                    $(`#tab_${cf}_top`).click()
+                }
                 ttt+=50;
                 setTimeout(()=>{
-                    document.querySelectorAll('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
-                    document.querySelectorAll('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
+                    $$('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
+                    $$('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
                 },ttt)
                 ttt+=250
                 setTimeout(()=>{
@@ -171,16 +195,16 @@ if(check()){ //es6
         var text = $('#fixed-header-drawer-exp').value;
         var t = new RegExp(text,'im');
         if(text!=''){
-            document.querySelectorAll('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
                 e.classList.add('hidden')
             });
-            document.querySelectorAll('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
                 if(e.children[0].children[1].innerHTML.match(t)){
                     setTimeout((e)=>e.classList.remove('hidden'),0,e);
                 }
             });
         } else{
-            document.querySelectorAll('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
                 e.classList.remove('hidden')
             });
         }
@@ -263,6 +287,7 @@ if(check()){ //es6
     }
     var isAlive = true
     function isRGAlive(){
+        return true
         let f = new Image()
         f.onerror= () => { isAlive = false }
         f.src='https://httpsify.xeodou.me/url?redirect=http://rugame.mobi/favicon.ico'
@@ -271,6 +296,10 @@ if(check()){ //es6
     function getAppInfo(appid,folder){
         if(!folder){
             folder = cf;
+        }
+        if(cf=='custom'){
+            cf = folder
+            setTimeout(()=>cf = 'custom',600)
         }
         fetchJSON(folder+'/data/all/'+appid+'.json').then((a)=>{
             let icons = window['icons_'+folder]||[];
@@ -347,17 +376,21 @@ if(check()){ //es6
     }
     function setDesc(o){
         let sc = '';
-        let desc = b64u(o['desc']);
         if('desc' in o){
-            if(!loaded[cf].all.confidmed){
+            let desc = b64u(o['desc']);
+            if(!(cf in loaded)){
                 $('#appDesc').innerHTML = desc;
-            }
-            loaded[cf].all.then((s)=>{
-                if(screenshots&&('i'+o.id in window['scr_'+cf])){
-                    sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
+            }else{
+                if(!loaded[cf].all.confirmed){
+                    $('#appDesc').innerHTML = desc;
                 }
-                $('#appDesc').innerHTML = sc+desc
-            })
+                loaded[cf].all.then((s)=>{
+                    if(screenshots&&('i'+o.id in window['scr_'+cf])){
+                        sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
+                    }
+                    $('#appDesc').innerHTML = sc+desc
+                })
+            }
         }
     }
     var itx = (()=>'innerText' in document.body ? 'innerText' : 'innerHTML')()
@@ -376,7 +409,7 @@ if(check()){ //es6
     }
     function closeTheBox(b){
         $('#infobox').classList.add('hidden');
-        document.querySelectorAll('.box').forEach((h)=>{h.classList.add('hidden')})
+        $$('.box').forEach((h)=>{h.classList.add('hidden')})
         if(!b){
             window.location.hash="#"
         }
@@ -389,12 +422,12 @@ if(check()){ //es6
     }
     let vkinit = false
     function showComments(){
-        $("#tab_t_-1").click()
+        showCustomTab('comments',1)
         if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
             VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
-            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=kononru">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/rugame_/chat"/>'
+            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=kononru">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/embed/rugame_/chat?no-mobile-redirect=true"/>'
             vkinit = true;
         }
     }
@@ -441,6 +474,7 @@ if(check()){ //es6
         localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
         localStorage['rg-intro'] = 1
         localStorage['rg-alphasort'] = alphasort = cazsort.checked
+        localStorage['rg-performance'] = noalltab = cnoalltab.checked
         closeTheBox(1)
         if(cf==''){
             autoSelectSection()
@@ -453,12 +487,57 @@ if(check()){ //es6
     var menuA = [
         selectSection,
         openTheBox,
-        ()=>{$("#tab_t_-2").click()},
+        showCustomTab,
+        showBlogPosts,
         showComments,
     ]
+    function toggleBlogPost(id){
+        if($('.bpopened')){
+            relocate(`#!/blog/`)
+        } else{
+            relocate(`#!/blog/${id}`)
+        }
+    }
+    function showBlogPosts(hchange){
+        if(!isblogloaded){
+            fetchJSON('blog/blog.json').then(b=>{
+                for(let post of b){
+                    post.longtext = b64u(post.longtext)
+                    post.longtext = post.longtext.replace(/\[\[(app|cgame|game)-([0-9]+)-([^\]]+)\]\]/img,'<div><a href="#/$1s/$2"><i class="material-icons">&#xE250;</i> $3 </a></div>')
+                    post.longtext = post.longtext.replace(/@@([^@]+)@([^@]+)@@/img,'<div><button class="mdl-button mdl-js-button mdl-button--colored mdl-js-ripple-effect" onclick="this.parentElement.lastChild.classList.toggle(\'hidden\')">$1</button><div class="hidden">$2</div></div>')
+                    $('#t_-3').innerHTML+=`
+<div class="mdl-grid blogpost" id="blog_${post.id}">
+<div class="mdl-card--expand mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+<div class="mdl-card__title" style="background:url(${post.bgpic})" onclick="toggleBlogPost(${post.id})"><h2 class="mdl-card__title-text">${post.title}</h2></div>
+<div class="mdl-card__supporting-text">
+${post.desc}
+<span class="mdl-chip"><span class="mdl-chip__text">${post.date}</span></span>
+</div>
+<div class="mdl-card__menu">
+<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" onclick="toggleBlogPost(${post.id})"><i class="material-icons">keyboard_arrow_right</i></button>
+</div>
+<div class="mdl-card__actions mdl-card--border">${post.longtext}</div>
+</div>
+</div>`
+            blogposts[post.id] = post
+                }
+            })
+        }
+        showCustomTab('blog',3,hchange===false?false:undefined)
+        isblogloaded = true
+    }
+    function showCustomTab(menuItem,id,norelocate){
+        switchTabs(cf,'')
+        switchSelectedMenuItem(menuItem)
+        $("#tab_t_-"+id).click()
+        cf='custom'
+        if(typeof norelocate == 'undefined'){
+            relocate('#!/'+menuItem)
+        }
+    }
     function clk(arg,id){
         autoClose()
-        menuA[id](arg)
+        menuA[id](arg,id)
     }
 
     function registerSW(){
@@ -503,12 +582,13 @@ if(check()){ //es6
                 addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:clk('${folder}',0)`,'me-'+folder);
         }
         addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('about',1);`,'me-about');
-        addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,2)','me-stats');
+        addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
         if(locale.l=='ru'){
-            addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,3)','me-comments');
+            addItem('a','mdl-navigation__link','Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
+            addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
         }
         swipes('#ly')
-        if(localStorage['rg-intro'] || navigator.userAgent.match('bot')){
+        if(localStorage['rg-intro'] || navigator.userAgent.match('bot')||window.location.hash.match('blog')){
             autoSelectSection()
         } else{
             openTheBox('about')

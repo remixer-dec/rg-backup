@@ -52,7 +52,9 @@ locales = {
         save:'save settings',
         cache:'caching',
         reload:'relod the app?',
-        alphasort:'alphabeticall sorting'
+        alphasort:'alphabeticall sorting',
+        performance: 'fix lags turning "all" tab off',
+        pferr: 'This tab wad disabled in settings'
     },
     ru:{
         l:'ru',
@@ -108,7 +110,9 @@ locales = {
         save:'сохранить',
         cache:'кэшировать',
         reload: 'перезагрузить для применения изменений?',
-        alphasort: 'алфавитная сортировка'
+        alphasort: 'алфавитная сортировка',
+        performance: 'не использовать вкладку "все" (устраняет лаги)',
+        pferr: 'эта вкладка была отключена в настройках'
     }
 }
 var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en

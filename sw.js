@@ -1,4 +1,4 @@
-var staticCache = 'rg-main-v3'
+var staticCache = 'rg-main-v4'
 var allCaches = [staticCache]
 
 self.addEventListener('install', (event) => {
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event)=>{
         event.respondWith(caches.match(event.request).then((response)=>{
           return response || fetch(event.request)
           .then(r=>{return r.status===404?(new Response('404 :(',{status:404})):r})
-          .catch(e=>{return new Response('{"error":"connection lost"}')})
+          .catch(e=>{return new Response('{"error": "connection lost"}')})
         }));
     }
 });
