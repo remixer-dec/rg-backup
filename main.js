@@ -9,6 +9,7 @@ if(check()){ //es6
     var alphasort = localStorage['rg-alphasort'] || false
     var noalltab = localStorage['rg-performance'] || false
     alphasort = alphasort == 'true'
+    noalltab = noalltab == 'true'
     icons = icons == 'true'
     var cf = '' //current folder
     var $ = (q) => document.querySelector(q);
