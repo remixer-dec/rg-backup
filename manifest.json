@@ -1,11 +1,11 @@
 {
-  "name": "RuGame J2ME Backup",
-  "description": "J2ME ROM Database",
-  "short_name": "RG J2ME",
+  "name": "RuGame Backup",
+  "description": "J2ME & Symbian ROM Database",
+  "short_name": "RG Backup",
   "scope": "/",
   "icons": [{
     "src": "icon.png",
-    "sizes": "144x144",
+    "sizes": "512x512",
     "type": "image/png"
   }],
   "display": "standalone",

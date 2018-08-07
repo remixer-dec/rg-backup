@@ -11,10 +11,12 @@ function addTab(type,id,name,hidden){
     panelhtml += panel + '\n'
     tabhtml += tab + '\n'
 }
+
 function addTopTabs(type,hidden){
     addTab(type,'all',locale.all,hidden)
     addTab(type,'top',locale.top,hidden)
 }
+
 function addTabs(){
     for (let cat in locale.tabs){
         addTopTabs(cat,true)
@@ -25,52 +27,30 @@ function addTabs(){
     addTab('t','-1','chat',true)
     addTab('t','-2','stats',true)
     addTab('t','-3','blog',true)
+    addTab('t','-4','favourites',true)
+    addTab('t','-5','mirrors',true)
     return tabhtml
 }
+
 function addTooltips(){
     for(tt in locale.tooltips){
         tthtml+= `<div class="mdl-tooltip" data-mdl-for="${tt}">${locale.tooltips[tt]}</div>`
     }
     return tthtml
 }
-function addStats(){
-    let html = '';
-    function addblock(){html+='<div class="mdl-grid"><div class="mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">';}
-    function closeblock(){html+='</div></div>'}
-    function ast(ic,n,txt){
-        html+=`
-        <a href="#"class="mdl-cell mdl-cell--5-col ai">
-        <i class="material-icons">${ic}</i>${n}<br><small>${txt}</small>
-        </a>`
-    }
-    addblock()
-    ast('games',11212,locale.apps)
-    ast('insert_drive_file',58830,locale.files)
-    ast('storage','25+GB',locale.data)
-    closeblock()
-    addblock()
-    ast('reorder','372KB',locale.ldb)
-    ast('portrait','10MB',locale.idb)
-    ast('important_devices','24MB',locale.scdb)
-    ast('dns','45MB',locale.tdb)
-    closeblock()
-    html+='</div></div>'
-    return html
-}
+
 function relocate(hash){
     document.location.hash=hash;
 }
-function scf(bw){
-    return bw?(bw=='apps'?'applications':bw):(cf[0]=='a'?'apps':cf);
-}
+
 function parseHash(url){
     if(url.startsWith('#')){
         url=window.location.origin+'/'+url
     }
     let h = new URL(url).hash.substr(1)
-    let type = h.match(/^\/(apps|games|cgames)\/([0-9]+)$/i)
+    let type = h.match(/^\/(apps|games|cgames|sapps|sgames)\/([0-9]+)\/?$/i)
     let blog = h.match(/\!\/blog\/?([0-9]+)?\/?/i)
-    let bug = h.match(/applications_all/i)
+    let bug = h.match(/apps_all/i)
     if(bug){
         console.log('unknown MDL caching  bug!')
         setTimeout(componentHandler.upgradeDom,300)
@@ -104,7 +84,7 @@ function parseHash(url){
         return ['custom']
     }
     if(type){
-        let at = scf(type[1])
+        let at = type[1];
         let id = parseInt(type[2])
         return [at,id]
     } else{
@@ -114,15 +94,18 @@ function parseHash(url){
         return false;
     }
 }
+
 function locate(url){
     let r = parseHash(url)
     if(r && r!='custom'){
         getAppInfo(r[1],r[0])
     }
 }
+
 function hashHandler(e){
     locate(e.newURL);
 }
+
 function initialize(){
     function addElement(e){
         let p = new Promise((rs,rj)=>{
@@ -147,12 +130,11 @@ function initialize(){
     window.alltabs.innerHTML += addTabs()
     window.tooltips.innerHTML += addTooltips()
     window.lists.innerHTML += panelhtml
-    document.querySelector('#t_-2').innerHTML=addStats()
     window.addEventListener("hashchange", hashHandler);
     loadScript("lib/material.min.js").then(()=>{
         let items = [
             loadStyle("lib/material.light_green-blue.min.css"),
-            loadStyle("style.min.css")
+            loadStyle("style.min.css"),
         ]
         if(typeof fetch != 'function'){
             items.push(loadScript('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js'))
@@ -163,4 +145,10 @@ function initialize(){
         loadScript("https://vk.com/js/api/openapi.js?121")
     })
 }
+
+function loadConfig(lsname,dvalue){
+    let c = localStorage[lsname] || dvalue;
+    return c == 'true';
+}
+
 setTimeout(initialize,1)

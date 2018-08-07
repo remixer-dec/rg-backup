@@ -4,7 +4,7 @@ locales = {
         l:'en',
         notSupported:'Your browser does not support ES6. This app requires it. Please updete your browser if you want to use this project.',
         tabs:{
-            applications:[
+            apps:[
                 [3482,'ARCHIVERS'], [3483,'MULTIMEDIA'], [3484,'INTERNET'], [3485,'GPS'], [3486,'SYSTEM'], [3738,'MAPS'],
                 [3739,'TRANSLATORS'], [4330,'JOKES'], [4715,'OTHER'], [75081,'EMULATORS'], [2171,'SMS COLLECTIONS'],
                 [10727,'MESSENGERS'], [10732,'OFFICE'], [5733,'BLUETOOTH'], [10810,'NEWS RSS WEATHER'],
@@ -17,7 +17,18 @@ locales = {
             cgames:[
                 [195,'CARDGAMES'], [12,'ARCADE'], [2,'ACTION'], [328,'RACING'], [17,'FIGHTING'], [19,'QUESTS'], [13,'LOGICAL'],
                 [389,'TABLE'], [4,'ONLINE'], [1513,'ADVENTURES'], [15,'RPG'], [358,'SIMULATORS'], [14,'SPORTS'], [7,'STRATEGY'], [6,'SHOOTERS']
+            ],
+            sapps:[
+                [9790, 'Archivers'], [36428, 'Audio Codecs'], [52342, 'Widgets'],
+                [9791, 'GPS Navigators'], [37765, 'For PC'], [9787, 'Internet Messengers'], [9788, 'Multimedia'], [25141, 'Organizers'],
+                [47167, 'Patches Mods Add-ons'], [28342, 'Translators'], [36427, 'Others'], [18972, 'System'], [19464, 'Utilities'],
+                [24627, 'Study calculators'], [9789, 'FileManagers'], [11318, 'Alarm Clocks'], [21593, 'Office Readers'], [29585, 'Emulators'],
+                [46777, 'Mods (for all)'], [37432, 'Mods 6-7-8'], [37433, 'Mods 9.1-9.3'], [37434, 'Mods 9.4']
+            ],
+            sgames:[
+                [2107,'Action'],[47591,'J2ME ports'],[2115,'RPG'],[2108,'Cardgames'],[2114,'Arcade'],[2109,'Racing'],[47589,'Mods'],[2118,'Fighting'],[3129,'Quests'],[15717,'Puzzles'],[29540,'Simulators'],[2116,'Sports'],[5136,'Strategy'],[2117,'Shooters'],[48195,'S3 Puzzles'],[46761,'S3 Strategy & RPG'],[43217,'S3 Simulators'],[43215,'S3 Racing'],[43214,'S3 Sports'],[43213,'S3 Action'],[43212,'S3 Arcade']
             ]
+   
         },
         tooltips:{
             'appLink':'Go to the source', 'appViews':'Views', 'appDls':'Downloads',
@@ -25,12 +36,14 @@ locales = {
             'appCat':'Category', 'appDate':'Uploaded', 'appUpdate':'Updated'
         },
         folders:{
-            "applications": "Apps",
-            "games":"Games",
-            "cgames": "Chinese Games"
+            'apps': 'Apps',
+            'games':'Games',
+            'cgames': 'Chinese Games',
+            'sapps': 'S-Apps',
+            'sgames': 'S-Games'
         },
-        about:'About',
-        about2:'This is a j2me game catalogue, created to backup all the info about J2ME ROMS from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files.',
+        about:'Settings',
+        about2:'This is a J2ME & Symbian app & game catalogue, created to preserve all the info about mobile apps and games from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files. J2ME is registered trademark of Oracle. Symbian is registered trademark of Nokia',
         all:'ALL',
         top:'TOP',
         apps: 'apps',
@@ -41,26 +54,36 @@ locales = {
         scdb:'image DB',
         tdb: 'info DB',
         stats: 'Stats',
-        copy: 'Copy the filename into the filter, after web archive loads all the files. It might take a while',
+        copy: 'This website does not provide direct access to an archived copy. You have to manually click on the arrow after the result URL',
         nodata: 'This app is unavailable',
         arc0:'This file is named as "',
         arc1:'" and is probably located in the following parts of archive: ',
         arc2:'" and is probably located in the following part of archive: ',
         traffic:'This app loads a lot of data every time you reload it. We do not recommend to enable graphical content if you have limited data plan.',
-        icons:'icons (1-10mb)',
-        screenshots:'screenshots (6-24mb)',
+        icons:'app-icons (1-10mb)',
+        screenshots:'screenshots (6-36mb)',
         save:'save settings',
         cache:'caching',
         reload:'relod the app?',
         alphasort:'alphabeticall sorting',
         pf: 'fix lags turning "all" tab off',
-        pferr: 'This tab wad disabled in settings'
+        pferr: 'This tab wad disabled in settings',
+        src: 'Source',
+        loadmore: 'show more',
+        listmode: 'List rendering mode',
+        pfull: 'full (for PC)',
+        pload: 'per-scroll loading',
+        ppage: 'pagination',
+        found: 'results:',
+        notfound: 'No results',
+        favs: 'Favourites',
+        nomirror: 'Mirrors are not supported yet in your language.'
     },
     ru:{
         l:'ru',
         notSupported:'Ваш браузер устарел, данный сервис разработан с использованием современных стандартов, которые не поддерживаются вашим браузером.',
         tabs:{
-            applications:[
+            apps:[
                 [3482,'АРХИВАТОРЫ'],[3483,'МУЛЬТИМЕДИЯ'],[3484,'ИНТЕРНЕТ'],[3485,'GPS'],[3486,'СИСТЕМНЫЕ'],[3738,'КАРТЫ СХЕМЫ'],
                 [3739,'СЛОВАРИ ПЕРЕВОДЧИКИ'],[4330,'ПРИКОЛЫ'],[4715,'РАЗНОЕ'],[75081,'ЭМУЛЯТОРЫ'], [2171,'СБОРНИКИ СМС'],
                 [10727,'ОБМЕН СООБЩЕНИЯМИ'], [10732,'ОФИСНЫЕ ОРГАНАЙЗЕРЫ'], [5733,'BLUETOOTH'],[10810,'НОВОСТИ RSS ПОГОДА'],
@@ -74,6 +97,16 @@ locales = {
                 [195,'АЗАРТНЫЕ'], [12,'АРКАДЫ'], [2,'ACTION'], [328,'ГОНКИ'], [17,'ДРАКИ'], [19,'КВЕСТЫ'], [13,'ЛОГИЧЕСКИЕ'],
                 [389,'НАСТОЛЬНЫЕ'], [4,'ONLINE'], [1513,'ПРИКЛЮЧЕНИЯ'], [15,'RPG'], [358,'СИМУЛЯТОРЫ'], [14,'СПОРТИВНЫЕ'],
                 [7,'СТРАТЕГИИ'], [6,'СТРЕЛЯЛКИ']
+            ],
+            sapps:[
+                [9790,'Архиваторы'],[36428,'Аудио-кодеки'],[52342,'Виджеты'],
+                [9791,'GPS Навигаторы'],[37765,'Для ПК'],[9787,'Интернет Мессенджеры'],[9788,'Мультимедия'],[25141,'Органайзеры'],
+                [47167,'Патчи Моды Дополнения'],[28342,'Переводчики'],[36427,'Прочие'],[18972,'Системные'],[19464,'Утилиты'],
+                [24627,'Учеба калькуляторы'],[9789,'Файловые'],[11318,'Часы Будильники'],[21593,'Читалки Офисные'],[29585,'Эмуляторы'],
+                [46777,'Моды (все)'],[37432,'Моды 6-7-8'],[37433,'Моды 9.1-9.3'],[37434,'Моды 9.4']
+            ],
+            sgames:[
+                [2107,'Action'],[47591,'J2ME порты'],[2115,'RPG'],[2108,'Азартные'],[2114,'Аркады'],[2109,'Гонки'],[47589,'Моды'],[2118,'Драки'],[3129,'Квесты Прилючения'],[15717,'Логические'],[29540,'Симуляторы'],[2116,'Спортивные'],[5136,'Стратегии'],[2117,'Стрелялки'],[48195,'S3 Логические'],[46761,'S3 Стратегии и RPG'],[43217,'S3 Cимуляторы'],[43215,'S3 Гонки'],[43214,'S3 Спортивные'],[43213,'S3 Action'],[43212,'S3 Аркады']
             ]
         },
         tooltips:{
@@ -82,12 +115,14 @@ locales = {
             'appCat':'Категория', 'appDate':'Добавлено', 'appUpdate':'Обновлено'
         },
         folders:{
-            "applications": "Приложения",
-            "games":"Игры",
-            "cgames": "China-игры"
+            'apps': 'Приложения',
+            'games':'Игры',
+            'cgames': 'China-игры',
+            'sapps': 'S-приложения',
+            'sgames': 'S-игры'
         },
-        about:'О сервисе',
-        about2:'Данный проект был разработан с целью архивирования данных обо всех доступных j2me-приложениях с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлежат их разработчикам. Для работы с данным сервисом требуется современный браузер.',
+        about:'Настройки',
+        about2:'Этот проект был разработан с целью архивирования данных обо всех доступных мобильных приложениях для старых платформ с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые NSFW игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлежат их разработчикам. Для работы с сервисом требуется современный браузер.',
         all:'ВСЕ',
         top:'ТОП',
         comments: 'Обсуждение',
@@ -99,26 +134,42 @@ locales = {
         idb: 'БД иконок',
         scdb:'БД скринов',
         tdb: 'БД текста',
-        copy: 'скопируйте имя файла в фильтр, после того как веб-архив загрузит весь список файлов (на это может уйти больше минуты)',
+        copy: 'выбранный сайт не даёт прямых ссылок на сохраненные копии сайтов, чтобы открыть копию, используйте стрелку рядом с адресом найденного результата',
         nodata: 'информация о данном приложении недоступна.',
-        arc0:'Данный файл (',
-        arc1:'), скорее всего, находится между частями ',
-        arc2:'), скорее всего, находится в части архива №',
-        traffic:'Данный сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загрзуку графического контента. Отображение иконок также может замедлять сервис во время первичных загрузок.',
+        arc0:'Выбран файл (',
+        arc1:'), он скорее всего, находится между частями ',
+        arc2:'), он скорее всего, находится в части архива №',
+        traffic:'Сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загрзуку графического контента. Отображение иконок также может замедлять сервис во время первичных загрузок.',
         icons:'иконки (1-10мб)',
-        screenshots:'скриншоты (6-24мб)',
+        screenshots:'скриншоты (6-36мб)',
         save:'сохранить',
         cache:'кэшировать',
         reload: 'перезагрузить для применения изменений?',
         alphasort: 'алфавитная сортировка',
         pf: 'не использовать вкладку "все" (устраняет лаги)',
-        pferr: 'эта вкладка была отключена в настройках'
+        pferr: 'эта вкладка была отключена в настройках',
+        src:'Источник',
+        loadmore: 'показать ещё',
+        listmode: 'Режим отображения списков',
+        pfull: 'Полный (рек. только для ПК)',
+        pload: 'Подгружаемый',
+        ppage: 'Постраничный',
+        found: 'Всего найдено:',
+        notfound: 'нет результатов',
+        favs: 'Избранное',
+        nomirror: 'Зеркало не установлено.'
     }
 }
-var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1)?locales.ru:locales.en
+var locale = (l.indexOf('ru')!=-1||l.indexOf('ru-RU')!=-1||l.indexOf('be')!=-1||l.indexOf('uk')!=-1||l.indexOf('kk')!=-1)?locales.ru:locales.en
 function check(){"use strict";try{eval("let es6 = (x)=>x+`${x}`")}catch(a){return!1}return!0}
 if(!check()){
     alert(locale.notSupported)
 } else{
+    if(!('foreach' in NodeList.prototype)){//Firefox OS fix 
+        NodeList.prototype.forEach = Array.prototype.forEach 
+    }
+    if(localStorage['rg-lng']){
+        locale = locales[localStorage['rg-lng']];
+    }
     document.querySelectorAll('.lc').forEach(function(e){e.innerHTML=locale[e.innerHTML]})
 }

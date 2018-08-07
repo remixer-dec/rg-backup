@@ -3,14 +3,14 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="apple-mobile-web-app-title" content="RG-J2ME-Backup">
+	<meta name="apple-mobile-web-app-title" content="RG-Backup">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="application-name" content="RG-J2ME-Backup">
-	<meta name="description" content="J2ME ROM Archive. Apps, games, search. JAR / JAD - Progressive Web App - Архив rugame.mobi | Java игры и приложения"/>
+	<meta name="application-name" content="RG-Backup">
+	<meta name="description" content="J2ME & Symbian ROM Archive. Apps, games, search. JAR / JAD - Progressive Web App - Архив rugame.mobi | Java и Symbian игры и приложения"/>
 	<meta name="theme-color" content="#8BC34A">
 	<link rel='icon' href='10.png'>
 	<link rel="manifest" href="manifest.json">
-	<title>RuGame J2ME Archive</title>
+	<title>RuGame Archive</title>
 	<style>
 	#splash{
 		background:#8BC34A;width:100%;height:100%;position:fixed;
@@ -43,6 +43,7 @@
 				<i class="material-icons mdl-layout-icon">settings</i>
 				<div class="mdl-layout__header-row">
 					<span class="mdl-layout-title"><span id="ab1" class="lc">about</span></span>
+					<span id="ab2" onclick="switchLang()" class="lc">l</span>
 				</div>
 				</header>
 				<div class="mdl-grid">
@@ -69,15 +70,22 @@
 							<div class="mdl-grid">
 								<div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons">sort_by_alpha</i></div>
 							</div>
-							<div class=" mdl-cell mdl-cell--12-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
+							<div class=" mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet">
 							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cazsort">
 								<input type="checkbox" id="cazsort" class="mdl-switch__input">
 								<span class="mdl-switch__label lc">alphasort</span>
-							</label>
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cnoalltab">
-								<input type="checkbox" id="cnoalltab" class="mdl-switch__input">
-								<span class="mdl-switch__label lc">pf</span>
-							</label>
+							</label><br><br>
+							<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height">
+							     <input type="text" value="" class="mdl-textfield__input" id="pmode" readonly>
+							     <input type="hidden" value="" name="pmode">
+							     <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
+							     <label for="pmode" class="mdl-textfield__label lc">listmode</label>
+							     <ul for="pmode" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+							         <li class="mdl-menu__item lc" data-val="0">pfull</li>
+							         <li class="mdl-menu__item lc" data-selected="true" data-val="1">pload</li>
+							         <li class="mdl-menu__item lc" data-val="2">ppage</li>
+							     </ul>
+							 </div>
 							</div>
 						</div><br>
 						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
@@ -91,24 +99,43 @@
 			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header" id='lybox'>
 				<header class="mdl-layout__header">
 					<img class="mdl-layout-icon" id="appIcon" src="10.png">
-				    <div class="mdl-layout__header-row">
-				    	<span class="mdl-layout-title" style="max-width: 80%;"><span id='appTitle'></span>
+				    <div class="mdl-layout__header-row" id="appTop">
+				    	<span class="mdl-layout-title marquee" id="titleoverlay"><span id='appTitle'></span>
 				        	<i class="material-icons" id="s3D">3d_rotation</i><i id="sBT" class="material-icons">bluetooth</i></span>
 				    	<div class="mdl-layout-spacer"></div>
 				        <nav class="mdl-navigation">
-				        	<a id="appLink" class="mdl-navigation__link" target="_blank" href="">
-				        	<i class="material-icons">cloud_upload</i>
-				        	</a>
+				        	<i class="material-icons mdl-navigation__link" onclick="favourite()" id="fvicon">star_border</i>
+				        	<i class="material-icons mdl-navigation__link" onclick="$('#appLinks').classList.toggle('hidden')">cloud_upload</i>
 				        </nav>
 				    </div>
+				    <div id="appLinks" class="mdl-layout__header-row mdl-grid hidden">
+				    	<a href="#" id="appSRC" target="_blank" class="mdl-cell  ai">
+				    	<i class="material-icons">public</i>
+				    	<span class="lc" tabindex="0">src</span></a>
+				    	<a href="#" id="appWA" target="_blank" class="mdl-cell ai">
+				    	<i class="material-icons">archive</i>
+				    	<span tabindex="0">W/A</span></a>
+				    	<a href="#" id="appGGL" target="_blank" class="mdl-cell ai">
+				    	<i class="material-icons">cloud_queue</i>
+				    	<span tabindex="0">Google</span></a>
+				    	<a href="#" id="appYND" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
+				    	<i class="material-icons">cloud_queue</i>
+				    	<span tabindex="0">Yandex</span></a>
+				    	<a href="#" id="appBNG" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
+				    	<i class="material-icons">cloud_queue</i>
+				    	<span tabindex="0">Bing</span></a>
+				    	<a href="#" id="appYAH" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
+				    	<i class="material-icons">cloud_queue</i>
+				    	<span tabindex="0">Yahoo</span></a>
+				    </div>
 				    <div class="mdl-layout__header-row mdl-grid">
-				    	  <div class="mdl-cell mdl-cell--4-col ai">
+				    	  <div class="mdl-cell ai">
 				    	  <i class="material-icons">remove_red_eye</i>
 				    	  <span id="appViews"></span></div>
-				    	  <a href="#dls" class="mdl-cell mdl-cell--4-col ai">
+				    	  <a href="#dls" class="mdl-cell ai">
 						  <i class="material-icons">file_download</i>
 				    	  <span id="appDls"></span></a>
-				    	  <a href="#" class="mdl-cell mdl-cell--4-col ai">
+				    	  <a href="#" class="mdl-cell ai">
 						  <i class="material-icons">comment</i>
 				    	  <span id="appComments"></span></a>
 				    </div>
@@ -156,17 +183,18 @@
 		            mdl-layout--fixed-header">
 		  <header class="mdl-layout__header">
 		    <div class="mdl-layout__header-row">
-		    <span class="mdl-layout-title">RuGame J2ME Archive</span>
+		    <span class="mdl-layout-title">RuGame Archive</span>
 		      <div class="mdl-layout-spacer"></div>
 		      <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable
-		                  mdl-textfield--floating-label mdl-textfield--align-right">
+		                  mdl-textfield--floating-label mdl-textfield--align-right" id="searchbar">
 		        <label class="mdl-button mdl-js-button mdl-button--icon"
 		               for="fixed-header-drawer-exp">
 		          <i class="material-icons">search</i>
 		        </label>
 		        <div class="mdl-textfield__expandable-holder">
-		          <input class="mdl-textfield__input" type="text" name="srch" id="fixed-header-drawer-exp" onkeyup="optsearch()">
+		          <input class="mdl-textfield__input" type="text" name="srch" id="fixed-header-drawer-exp" onkeyup="optsearch()" onfocus="searchresults.classList.remove('hidden')" onblur="setTimeout(()=>searchresults.classList.add('hidden'),400)">
 		        </div>
+		        <div id="searchresults" class="hidden"></div>
 		      </div>
 		    </div>
 		    <div id="alltabs" class="tabs mdl-layout__tab-bar mdl-js-ripple-effect">
@@ -174,8 +202,17 @@
 		  </header>
 		  <div class="mdl-layout__drawer">
 		    <nav class="mdl-navigation mds">
+		    	<div class="mspoiler">
+		    		<div class="mheader" onclick="this.parentElement.classList.toggle('mopen')"><i class="material-icons mic">smartphone</i>J2ME<i class="material-icons marr">keyboard_arrow_down</i>
+		    		</div>
+		    		<div id="jcontent" class="mcontent">
+		    		</div>
+		    	</div>
+		    	<div class="mspoiler"><div class="mheader" onclick="this.parentElement.classList.toggle('mopen')"><i class="material-icons mic">tablet</i>Symbian<i class="material-icons marr">keyboard_arrow_down</i></div>
+				<div id="scontent" class="mcontent" ></div>
+		    	</div>
 		    </nav>
-		    <small id="version">v2.6.9 ~ 07/05/18</small>
+		    <small id="version">v2.8.0 ~ 07/08/18</small>
 		  </div>
 		  <main id="lists" class="mdl-layout__content">
 		  </main>

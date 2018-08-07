@@ -1,22 +1,26 @@
 if(check()){ //es6
+    //hide splashscreen after loading
     setTimeout(()=>{window.splash.classList.add('spf')},500)
     setTimeout(()=>window.splash.remove(),21000)
     componentHandler.upgradeDom()
-    var localLinks = false;
-    var screenshots = localStorage['rg-screenshots'] || true;
-    screenshots = screenshots == 'true'
-    var icons = localStorage['rg-icons'] || true;
-    var alphasort = localStorage['rg-alphasort'] || false
-    var noalltab = localStorage['rg-performance'] || false
-    alphasort = alphasort == 'true'
-    noalltab = noalltab == 'true'
-    icons = icons == 'true'
+    //fix the mdl layout and declare configuration
+    const MAX_ITEMS_P = 20
+    var screenshots = loadConfig('rg-screenshots',true)
+    var icons = loadConfig('rg-icons',false)
+    var alphasort = loadConfig('rg-alphasort',false)
+    var prmode = localStorage['rg-performance'] || false
+    prmode = parseInt(prmode);
+    prmode = prmode == NaN ? 1 : prmode;
+    var favs = JSON.parse(localStorage['rg-fav'] || '{}');
     var cf = '' //current folder
+    var loaded = [];
+    var lastInput = 0;
+    var lastTarget = false;
+    var tt,ttt;//timers to optimize loading
+    const appDB = [];
+    const folders = Object.keys(locale.folders);
     var $ = (q) => document.querySelector(q);
     $$ = typeof $$ != 'function'? q => document.querySelectorAll(q):$$
-    var loaded = [];
-    var lastinput = 0;
-    var tt,ttt;//timers to optimize loading
     function fetchJSON(filename){
         return new Promise((rs,rj)=>{
             fetch(filename).then((f)=>{
@@ -30,6 +34,16 @@ if(check()){ //es6
         return decodeURIComponent(atob(str).split('').map(function(c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
+    }
+
+    function getCfID(n){
+        let scf = cf;
+        if(typeof n == "string"){
+            scf = n;
+            n = undefined;
+        }
+        let x = folders.indexOf(scf)
+        return typeof n !== "undefined"?folders[n]:x;
     }
 
     function addItem(type,xclass,text,to,href,id){
@@ -46,6 +60,7 @@ if(check()){ //es6
         $(to).appendChild(item);
     }
     function loadScreenshots(folder){
+        autoloader();
         if(screenshots){
             fetchJSON(cf+'/data/screenshots.json').then((sc)=> {
                 window['scr_'+folder] = sc;
@@ -59,42 +74,46 @@ if(check()){ //es6
         $$(`.${show}-tab`).forEach(e=>e.classList.remove('hidden'));
     }
     function switchSelectedMenuItem(item){
-        $('.mds').classList.remove('mds')
-        $('#me-'+item).classList.add('mds')
+        let oldm = $('.mds')
+        if(oldm){
+            oldm.classList.remove('mds')
+        }
+        let newm = $('#me-'+item)
+        if(newm){
+            newm.classList.add('mds')
+        }
     }
     function loadCoreData(folder){
-        fetchJSON(folder+'/data/cats.json').then(j=>{
-            tt = ttt = 0;
-            if(icons){
-                fetchJSON(cf+'/data/icons.json').then(ic=>{
-                    loadScreenshots(folder)
-                    window['icons_'+folder] = ic;
-                    setTimeout(loadAppList,tt,j,ic);
-                    setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-                });
-            } else{
+        tt = ttt = 0;
+        if(icons){
+            fetchJSON(cf+'/data/icons.json').then(ic=>{
                 loadScreenshots(folder)
-                setTimeout(loadAppList,tt,j,[]);
+                window['icons_'+folder] = ic;
+                setTimeout(loadAppList,tt,ic);
                 setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-            }
-        });
+            });
+        } else{
+            loadScreenshots(folder)
+            setTimeout(loadAppList,tt,[]);
+            setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
+        }
     }
     function selectSection(folder){
         if(cf==folder){return}
         switchSelectedMenuItem(folder)
         switchTabs(cf,folder)
         cf = folder;
-        if(!document.location.hash.match(scf())){
+        if(!document.location.hash.match(cf)){
             relocate('#/'+folder+'/')
         }
         if(!(folder in loaded)){ //load only once
-        $('#spinner').classList.remove('hidden');
-        loaded[folder] = {confirmed:0}
-        loaded[folder].all = new Promise((res,rej)=>{loaded[folder].confirm = res})
-        if(window.location.hash.length > 1){
-            setTimeout(locate,1,window.location.href)
-        }
-            loadCoreData(folder)
+            $('#spinner').classList.remove('hidden');
+            loaded[folder] = {confirmed:0}
+            loaded[folder].all = new Promise((res,rej)=>{loaded[folder].confirm = res})
+            if(window.location.hash.length > 1){
+                setTimeout(locate,1,window.location.href)
+            }
+                loadCoreData(folder);
         } else {
             $('.'+cf+'-tab').click();
         }
@@ -103,22 +122,46 @@ if(check()){ //es6
         cscreenshots.checked == screenshots? 1 : cscreenshots.parentElement.click()
         cicons.checked == icons? 1 : cicons.parentElement.click()
         cazsort.checked == alphasort? 1 : cazsort.parentElement.click()
-        cnoalltab.checked == noalltab? 1 : cnoalltab.parentElement.click()
         if(window.location.hash.length>1){
-            let h = parseHash(window.location.hash)[0]||'applications'
+            let h = parseHash(window.location.hash)[0]||'apps'
             if(h!='custom'){
                 selectSection(h)
             }
         }else{
-            selectSection('applications');
+            selectSection('apps');
         }
     }
     function alphasorter(a,b){
-        if(a[1] < b[1]) return -1
-        if(a[1] > b[1]) return 1
+        if(a[1].toLowerCase() < b[1].toLowerCase()) return -1
+        if(a[1].toLowerCase() > b[1].toLowerCase()) return 1
         return 0;
     }
-    function loadAppList(cats,ic){
+    function pageRenderer(p,a){
+        p = parseInt(p);
+        p=p-1;
+        let elems = $$('.mdl-layout__tab-panel.is-active >ul > div');
+        let activeElem = $('.mdl-layout__tab-panel.is-active .pactive');
+        if(!activeElem) return;
+        if(activeElem.classList.contains('loadmore')){
+            activeElem.classList.add('hidden');
+            return false;
+        }
+        if(!a){
+            activeElem.classList.add('hidden');
+            var target = elems[p]
+        } else{
+            var target = activeElem.nextElementSibling;
+        }
+        if(!target) return;
+        if(target == lastTarget) return;
+        window.lastTarget = target;
+        activeElem.classList.remove('pactive');
+        target.classList.add('pactive');
+        target.classList.remove('hidden');
+    }
+    function loadAppList(ic){
+        let cats = locale.tabs[cf].map(e=>{return {id:e[0],name:e[1]}});
+        cats.push({id:0,name:locale.top});
         fetchJSON(cf+'/data/v2data.json').then((al)=>{
             if(alphasort){
                 for(let pr in al){
@@ -128,65 +171,101 @@ if(check()){ //es6
             }
             let all = []
             for(let cat of cats){
-            let list = '';
+            let list = '<div class="pactive">';
+            let ii = 0;
             for(var app of al[cat.id]){
                 let icon = ic['i'+app[0]];
                 if(icon){
                     icon = 'data:image/png;base64,'+icon;
                 } else {
                     icon = '10.png'
+                    if(cf=='sapps'||cf=='sgames'){
+                        icon = '11.png'
+                    }
+                }
+                let ricon = 'info'
+                let aclass = 'mi hidden';
+                if(app.length==3){
+                    if(app[2]==1){
+                        ricon = 'flag'
+                    }
                 }
                 let appitem = `
-                <li class="mdl-list__item" onclick="relocate('#/${scf()}/${app[0]}')">
+                <li class="mdl-list__item" onclick="relocate('#/${cf}/${app[0]}')">
                   <span class="mdl-list__item-primary-content">
                   <img class="mdl-list__item-icon appic" data-src="${icon}">
                   <span class="mdl-list__item-text-body">${app[1]}</span>
                   </span>
                   <span class="mdl-list__item-secondary-content">
-                    <a class="mdl-list__item-secondary-action" href="#/${scf()}/${app[0]}"><i class="mi hidden">info</i></a>
+                    <a class="mdl-list__item-secondary-action" href="#/${cf}/${app[0]}"><i class="mi hidden">${ricon}</i></a>
                   </span>
                 </li>
                 `;
                 list += appitem
-                if(cat.id!=0 && !noalltab){
+                ii++
+                if(ii%MAX_ITEMS_P==0){
+                    list+="</div><div"+(prmode>0?' class="hidden"':'')+">"
+                }
+                if(cat.id!=0){
+                    if(app.length==3){
+                        app.splice(2,1);
+                    }
+                    appDB.push(app.concat([cf,cat.name]));
                     all.push([appitem,app[1]])
                 }
+            }
+            let apppages=Math.ceil(al[cat.id].length/MAX_ITEMS_P);
+            if(prmode==2&&apppages>1){
+                list+='</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>'
+            }
+            if(prmode==1&&apppages>1){
+                list+='</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>';   
             }
             if(cat.id=="0"){cat.id="top"}
             setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
             ttt+=20;
             if(cats[cats.length-1].id==cat.id){
-                all = alphasort?all.sort(alphasorter).map(a=>a[0]).join(''):all.map(a=>a[0]).join('')
-                if(!noalltab){
-                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
-                } else{
-                    setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,'<center>'+locale.pferr+'</center>');
-                    $(`#tab_${cf}_top`).click()
-                }
+                all = alphasort?all.sort(alphasorter):all;
+                let apppages = Math.ceil(all.length/MAX_ITEMS_P);
+                all = all.map((a,b)=>b==0?'<div class="pactive">'+a[0]:b%MAX_ITEMS_P==0?"</div><div"+(prmode>0?' class="hidden"':'')+">"+a[0]:a[0]).join('')+(prmode==2?'</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>':(prmode==1?'<div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>':''));
+                //TODO: remake ^this thing 
+                setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
                 ttt+=50;
                 setTimeout(()=>{
                     $$('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
                     $$('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
                 },ttt)
-                ttt+=250
+                ttt+=850
                 setTimeout(()=>{
                     $('#spinner').classList.add('hidden')
                     all = undefined
+                    $('#me-'+cf).innerHTML +='<i class="material-icons rc">check</i>'
+                    componentHandler.upgradeDom()
                 },ttt);
             }
         }});
     }
     function insertAppList(el,list,add){
         el.innerHTML = add?el.innerHTML+list:list;
+        //TODO: add experimental iscroll support here
+    }
+    function autoloader(e){
+        if(prmode==1){
+            lists.addEventListener('scroll',(e)=>{
+                if(lists.offsetHeight + lists.scrollTop > lists.scrollHeight-60){
+                    pageRenderer(0,true)
+                }
+            },supportsPassive ? {passive:!0} : !1)
+        }  
     }
     function optsearch(){
-        lastinput = new Date().getTime()
+        lastInput = new Date().getTime()
         fastsearch();
     }
     function fastsearch(){
-        if(lastinput){
-            if(new Date().getTime() - lastinput > 700){
-                lastinput = false;
+        if(lastInput){
+            if(new Date().getTime() - lastInput > 700){
+                lastInput = false;
             } else {
                 return setTimeout(fastsearch,720);
             }
@@ -194,31 +273,56 @@ if(check()){ //es6
             return;
         }
         var text = $('#fixed-header-drawer-exp').value;
-        var t = new RegExp(text,'im');
-        if(text!=''){
-            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                e.classList.add('hidden')
-            });
-            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                if(e.children[0].children[1].innerHTML.match(t)){
-                    setTimeout((e)=>e.classList.remove('hidden'),0,e);
-                }
-            });
+        if(prmode == 0 && text !='' && text[0]=='!'){
+            text = text.slice(1)
+            let t = new RegExp(text,'im');
+            if(text.length>0){
+                if(text.length<2) return;
+                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+                    e.classList.add('hidden')
+                });
+                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+                    if(e.children[0].children[1].innerHTML.match(t)){
+                        setTimeout((e)=>e.classList.remove('hidden'),0,e);
+                    }
+                });
+            } else{
+                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
+                    e.classList.remove('hidden')
+                });
+            }
         } else{
-            $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                e.classList.remove('hidden')
-            });
+            if(text.length>2){
+                let t = new RegExp(text,'im');
+                let cc = cf
+                let results = appDB.filter(e=>e[1].match(t))
+                let total = results.length
+                results = results.splice(0,30).sort(alphasorter).sort((a,b)=>{
+                    if(a[2]==cc){
+                        return -9
+                    } else return 9;
+                }).splice(0,10);
+                if(results.length==0){
+                    searchresults.innerHTML = `<a>${locale.notfound}</a>`;
+                    return
+                }
+                results.push
+                searchresults.innerHTML=results.map(r=>`<a href='#/${r[2]}/${r[0]}'>${r[1]}<br>`).join('')+(total>10?`<a id="totalr">${locale.found} ${total}</a>`:'');
+            } else{
+                searchresults.innerHTML = '';
+            }
         }
     }
     function getMLink(e,filename){
         const filters = []
         const links = {
-            applications: 'aHR0cHM6Ly9tZWdhLm56LyNGIWplSkFFWTVJIWczcWdzNWhPTUV6UzdDZVRCTnFzWEE=',
+            apps: 'aHR0cHM6Ly9tZWdhLm56LyNGIWplSkFFWTVJIWczcWdzNWhPTUV6UzdDZVRCTnFzWEE=',
             games: 'aHR0cHM6Ly9tZWdhLm56LyNGIXZQd0NGSXJBIUxZSm9MSnZHbkRiUlRqS0FueWhELWc=',
-            cgames: 'aHR0cHM6Ly9tZWdhLm56LyNGITdMcFFIYXdiITBRZm9xYjhoUWt0Um9BY0VDb01MdEE='
+            cgames: 'aHR0cHM6Ly9tZWdhLm56LyNGITdMcFFIYXdiITBRZm9xYjhoUWt0Um9BY0VDb01MdEE=',
+            sapps: ["aHR0cHM6Ly9tZWdhLm56LyNGIVBxcFZTQlpUIWJZeFgteFFqMlIzbnB2SE8tTlh4OGc="],
+            sgames: ["aHR0cHM6Ly9tZWdhLm56LyNGITY3b25GQlJSIUZqVW9oeVl3bmxmM1lXSTFQOWkxLWc="]
         }
-        e.href = b64u(links[cf])
-        filters['applications'] = ['1.1','BEST_GAMES_17_LITE','E1000_mega_konon','GhostSensor_K500',
+        filters['apps'] = ['1.1','BEST_GAMES_17_LITE','E1000_mega_konon','GhostSensor_K500',
         'ICQMobile','LIKE_PC_GAME_4_FULL','MOBGAMES_5','MoM4lite','NUMISMAT_40','qipmobile_sie_a',
         'rugame_mobi_mir_strategii_6','rugame_mobi_Vista','SlovoEd_Deluxe_Eng','the_best_novosti11','vvs_notepadRu']
         filters['games'] = ["!P","3DMiniGolfWor_n95_bykriker","160.jar","240x320_se_k770_k800_s500_t650_w850_rus_paris","365Bowling_s5230","996280","AlienQuarantine_SAMSUNG_GT_S5230_EN","apo_se_aino_en","Atudela_240","BeachBallCrabMayhem_w","BMW_Racing_nokia_62","bubble_pop","CallofDuty3_n623","CBS240x320lg","Collapse_2010_SE_Satio","Circket 2016 24","daughter2_ru_nokia_240x320_s60","Dirty_D5","DragonMania_LG_KU","EarthwormJim_ru_s60","everybodys_golf_nokia_n95","FerrariGT3_Nokia_N73","formularacingpro_nokia_240x320_s60",
@@ -228,6 +332,8 @@ if(check()){ //es6
         filters['cgames'] = ["0A","240x320a","AYSJ","ChanKuo3_N3","d608","DPCQ2N73","E2.123","e2.313","e2.496","E2.666","E6.114","e6.302","e62.169","e62.306","E62.459","e62.661","E62.789","e62.957","fcjdE2","guardianlegend_s4","guangjinN5","jxihab_n","k700.239","k700.583","K790.145","K790.298","K790.463","K790.605","L6.2","LOK","MHQ","Myz",
         "N73.215","n73.339","n73.472","n73.615","N73.787","n73.1007","n73.1208","n73.1332","n73.1470","N73.1633","n73.1817","n73_bt.20","n97.110","n97.225","n97.356","n97.484","n97.613","N5500.90","N5800.42","N5800.168","N5800.283","N7370.1","n7370.204","N7370.399","n7370.642",
         "N7370.799","N7370.979","N7610.109","n7610.380","N6710.695","N7610.943","N7610.1132","NHDiaoyueMuzhu_v1.0.0_D6","PES2011_N76","s40n7370.1","se_k700","SJQYE2","Sword_H","TJSXC_no","V8.17","WLQJN7610","XLQYK","ylsgsN","ZSSFN73","ZZTKW"]
+        filters['sapps'] = ['0']
+        filters['sgames'] = ['0']
         let currentFilter=filters[cf]
         let magicNumber = 0;
         filename = filename.toLowerCase()
@@ -255,7 +361,7 @@ if(check()){ //es6
                 }
             }
         }
-        if(filename<'0'||filename[0]=='_'||!filename.endsWith('.jar')||filename<filters[0]){
+        if(filename<'0'||filename[0]=='_'||(!filename.endsWith('.jar')&&cf[0]!='s')||filename<filters[0]){
             if(cf!='games'){
                 magicNumber = currentFilter.length;
             } else {
@@ -270,7 +376,8 @@ if(check()){ //es6
                 for(let fn of currentFilter){
                     fn = fn.toLowerCase()
                     if(filename.startsWith(fn)){
-                        return alert(locale.arc0 + filename + locale.arc1+i+', '+(i+1))
+                        e.href = (typeof links[cf]!='string')?b64u(links[cf][0]):b64u(links[cf]);
+                        return alert(cf[0]=='s'?(locale.arc0 + filename + ')'):(locale.arc0 + filename + locale.arc1+i+', '+(i+1)))
                     }
                     if(advancedCompare(filename,fn)){
                         i++;
@@ -281,18 +388,39 @@ if(check()){ //es6
                 }
             }
         }
-        if(cf=='cgames' && filename.match('\.[0-9]+\.jar')){
-            alert('Из-за одинаковых имён и отсутствия некоторых файлов, номер файла может не совпадать с указанным.')
+        if(typeof links[cf]!='string'){
+            e.href = b64u(links[cf][0])
+        } else{
+            e.href = b64u(links[cf])
         }
-        alert(locale.arc0 + filename + locale.arc2+magicNumber)
+        if(cf=='cgames' && filename.match('\.[0-9]+\.jar')){
+            alert('Номер файла может не совпадать с указанным. Мы работает над исправлением, но это займёт какое-то время.')
+        }
+        if(cf[0]!='s'){
+            alert(locale.arc0 + filename + locale.arc2+magicNumber)
+        } else{
+            alert(locale.arc0 + filename + ')');
+        }
     }
-    var isAlive = true
-    function isRGAlive(){
-        return true
-        let f = new Image()
-        f.onerror= () => { isAlive = false }
-        f.src='https://httpsify.xeodou.me/url?redirect=http://rugame.mobi/favicon.ico'
-
+    function favourite(onlycheck){
+        function check(x){return x in favs}
+        let appinfo = fvicon.name.split("|")
+        let xid = parseInt(appinfo[0])
+        let core = 'a'+appinfo[1]+'_'+xid.toString(32);
+        if (onlycheck){
+            return check(core);
+        }
+        if(check(core)){
+            delete favs[core];
+            fvicon.innerHTML='star_border'
+        } else{
+            favs[core]=appinfo[2];
+            fvicon.innerHTML='star'
+        }
+        localStorage['rg-fav'] = JSON.stringify(favs);
+        if($('.mds').id=='me-favourites'){
+            showFvs()
+        }
     }
     function getAppInfo(appid,folder){
         if(!folder){
@@ -303,16 +431,28 @@ if(check()){ //es6
             setTimeout(()=>cf = 'custom',600)
         }
         fetchJSON(folder+'/data/all/'+appid+'.json').then((a)=>{
+            a.id = appid;
             let icons = window['icons_'+folder]||[];
-            $('#appIcon').src=icons['i'+a.id]?'data:image/png;base64,'+icons['i'+a.id]:'10.png';
-            document.title = a['name']+' - RuGame J2ME Archive'
+            $('#appIcon').src=icons['i'+a.id]?'data:image/png;base64,'+icons['i'+a.id]:(cf[0]=='s'?'11.png':'10.png');
+            document.title = a['name']+' - RuGame Unofficial Archive';
+            fvicon.name = appid+'|'+getCfID()+'|'+a.name;
+            fvicon.innerHTML = favourite(1)?'star':'star_border';
             setField(a,'name','appTitle');
             setField(a,'vie','appViews');
             setField(a,'dwn','appDls');
             setField(a,'cmm','appComments');
             setField(a,'rating','appRating','rtg');
-            $('#appLink').href =(isAlive?'':'https://web.archive.org/web/')+'http://rugame.mobi/'+(cf=='cgames'?'china/':'game/')+a.id;
-            p1.MaterialProgress.setProgress(a.rating.ups*100/(parseInt(a.rating.ups)+parseInt(a.rating.dws)));
+            let appURL = 'http://rugame.mobi/'+(cf=='cgames'?'china/':'game/')+a.id;
+            $('#appSRC').href = appURL;
+            $('#appWA').href = 'https://web.archive.org/web/'+appURL;
+            $('#appGGL').href = 'http://webcache.googleusercontent.com/search?q='+appURL;
+            $('#appYND').href = 'https://yandex.com/search/?text=site:'+appURL;
+            $('#appBNG').href = 'https://bing.com/search?q=site:'+appURL;
+            $('#appYAH').href = 'https://search.yahoo.com/search?p=site:'+appURL;
+            if('rating' in a){
+                let rtg = a.rating.rtg.split("/");
+                p1.MaterialProgress.setProgress(rtg[0]*100/(parseInt(rtg[0])+parseInt(rtg[1])));
+            }
             ('s3D' in a && a['s3D'])?$('#s3D').classList.remove('hidden'):$('#s3D').classList.add('hidden');
             ('bt' in a && a['bt'])?$('#sBT').classList.remove('hidden'):$('#sBT').classList.add('hidden')
             setDesc(a);
@@ -332,6 +472,8 @@ if(check()){ //es6
                 let t = new Date().getTime()+a.id
                 dlc+=f.text+'<div class="mdl-grid">';
                 for(let l of f.links){
+                    l.type = l.file.match(/(?!\.)[a-z]+$/im);
+                    l.type = l.type?l.type[0].toUpperCase():'???'
                     i++;
                     let size;
                     if(f.size){
@@ -339,30 +481,30 @@ if(check()){ //es6
                     } else {
                         size = '';
                     }
-                    let link = localLinks?folder+'/files/'+l.file:l.url;
+                    let link = localStorage['lmirror']?localStorage['lmirror']+folder+'/'+l.file:'javascript:alert(\''+locale.nomirror+'\')';
+                    if(l.type=='???'){
+                        link = `javascript:alert('${locale.notfound}')`
+                    }
+                    let onclick = ''
+                    let target = '_blank'
+                    if(link.match('ipt:')){
+                        target = '';
+                    }
+                    if(link.match('file:')){
+                        onclick=`prompt('ссылка на локльный файл','${link}');`
+                        link = `#dls`
+                        target = '';
+                    }
                     dlc+=`
-                    <a href="${link}" rel="noreferrer" target="_blank" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}">
+                    <a href="${link}" rel="noreferrer" target="${target}" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}" onclick="${onclick}">
                     <i class="material-icons">file_download</i>${l.type}
                     </a>
                     <div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t+'_'+i}">${l.file}<br>${size}</div>
                     `;
-                    if(l.type != 'JAD'){
+                    if(l.type != 'JAD' && l.file != ''){
                         dlc+=`<a href="#mega" onclick="getMLink(this,'${l.file}')" target="_blank" class="mdl-cell mdl-cell--5-col ai">
                         <i class="material-icons">cloud_download</i>[MEGA]
                         </a>`
-                        if(!isAlive){
-                        dlc+=`
-                        <a onclick="prompt(locale.copy,'${l.file}')" href="https://web.archive.org/web/*/rugame.mobi/game/*" target="_blank" class="mdl-cell mdl-cell--5-col ai">
-                        <i class="material-icons">find_in_page</i>[WA]
-                        </a>
-                        <a href="https://google.com/search?q=${encodeURI('"'+l.file+'"')}" target="_blank" class="mdl-cell mdl-cell--5-col ai">
-                        <i class="material-icons">find_in_page</i>[G]
-                        </a>
-                        <a href="https://yandex.com/search?text=${encodeURI('"'+l.file+'"')}" target="_blank" class="mdl-cell mdl-cell--5-col ai">
-                        <i class="material-icons">find_in_page</i>[Y]
-                        </a>
-                        `
-                        }
                     }
                 }
                 dlc+='</div>'
@@ -414,7 +556,7 @@ if(check()){ //es6
         if(!b){
             window.location.hash="#"
         }
-        document.title = 'RuGame J2ME Archive'
+        document.title = 'RuGame Archive'
     }
     function openTheBox(id){
         $('#'+id).classList.remove('hidden');
@@ -422,12 +564,31 @@ if(check()){ //es6
         $('#lybox').scroll(0,0);
     }
     let vkinit = false
+    function showFvs(){
+        let fvhtml = '';
+        for(fv in favs){
+            let fx = fv.substr(1);
+            let f = fx.split('_')
+            let id = parseInt(f[1],32);
+            f = getCfID(parseInt(f[0]))
+            let n = favs[fv];
+            fvhtml+= `
+            <li class="mdl-list__item" onclick="relocate('#/${f}/${id}')">
+            <span class="mdl-list__item-primary-content">
+                  <span class="mdl-list__item-text-body">${n}</span>
+            </span>
+            <span class="mdl-list__item-secondary-content">
+                <a class="mdl-list__item-secondary-action" href="#/${f}/${id}"><i class="material-icons">star</i></a>
+            </span></li>`
+        }
+        document.querySelector('#t_-4').innerHTML = fvhtml;
+        showCustomTab('favourites',4)
+    }
     function showComments(){
         showCustomTab('comments',1)
         if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
-            VK.Widgets.Poll("t_-1", {}, "287271480_307283ab502526db03");
             $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=kononru">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/embed/rugame_/chat?no-mobile-redirect=true"/>'
             vkinit = true;
         }
@@ -466,16 +627,16 @@ if(check()){ //es6
         function touchend(){
             grs(0)
         }
-        a.addEventListener('touchstart', touchstart, !1);
-        a.addEventListener('touchmove', touchmove, !1);
-        a.addEventListener('touchend', touchend, !1);
+        a.addEventListener('touchstart', touchstart, supportsPassive ? {passive:!0} : !1);
+        a.addEventListener('touchmove', touchmove, supportsPassive ? {passive:!0} : !1);
+        a.addEventListener('touchend', touchend, supportsPassive ? {passive:!0} : !1);
     }
     function saveConfig(){
         localStorage['rg-icons'] = icons = cicons.checked
         localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
         localStorage['rg-intro'] = 1
         localStorage['rg-alphasort'] = alphasort = cazsort.checked
-        localStorage['rg-performance'] = noalltab = cnoalltab.checked
+        localStorage['rg-performance'] = prmode = parseInt(document.getElementsByName('pmode')[0].value)
         closeTheBox(1)
         if(cf==''){
             autoSelectSection()
@@ -485,13 +646,6 @@ if(check()){ //es6
             }
         }
     }
-    var menuA = [
-        selectSection,
-        openTheBox,
-        showCustomTab,
-        showBlogPosts,
-        showComments,
-    ]
     function toggleBlogPost(id){
         if($('.bpopened')){
             relocate(`#!/blog/`)
@@ -527,6 +681,17 @@ ${post.desc}
         showCustomTab('blog',3,hchange===false?false:undefined)
         isblogloaded = true
     }
+    function showMirrors(){
+        let localM = localStorage['rg-lmirror'] || false;
+        document.querySelector('#t_-5').innerHTML = `<div class='bpx'>
+        На данный момент можно выбрать только 1 основное файловое зеркало:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Указать путь</button><br>
+        Примером использования может стать локальное зеркало. Это способ связать ваш локальный бэкап распакованных файлов и данный сервис.
+        Необходимо указать путь до папки, или до вашего сервера. В корне указанной папки должны находиться отдельные папки для каждой категории.
+        Их имена должны быть apps, games, cgames, sapps, sgames, внутри каждой из которых находятся распакованные файлы приложений с оригинальными именами. После привязки, выбранный вами файл будет загружаться из вашего же хранилища. 
+        <br><br>Если вы решите создать или разместить файловое зеркало и желаете опубликовать его на этом сайте, прочитайте подробнее в блоге, в конце поста о версии 2.8</div>
+        `;
+        showCustomTab('mirrors',5)
+    }
     function showCustomTab(menuItem,id,norelocate){
         switchTabs(cf,'')
         switchSelectedMenuItem(menuItem)
@@ -536,11 +701,25 @@ ${post.desc}
             relocate('#!/'+menuItem)
         }
     }
+
     function clk(arg,id){
         autoClose()
         menuA[id](arg,id)
     }
 
+    function selectMirrorPath(){
+        var lmp = prompt('Введите путь до основной папки');
+        if(lmp){
+            if(!lmp.match(/^http|^ftp/i)){
+                lmp = lmp.replace(/file:\/\/\/?/g,'')
+                lmp='file:///'+lmp
+                lmp = lmp.replace(/\\/g,'/')
+                lmp = lmp[lmp.length-1] =='/'?lmp:lmp+'/'
+                alert('Браузеры не позволяют ссылаться напрямую на локальные файлы. В качестве решения будет показано окно с ссылкой на локалньый файл. Её можно скопировать и вставить в адресную строку. В качестве альтернативы можно поставить локальный сервер, с ним все будет работать напрямую.')
+            }
+            localStorage['lmirror']=lmp
+        }
+    }
     function registerSW(){
     	let updateReady = function (worker) {
         	worker.postMessage({ action: 'refresh' })
@@ -579,22 +758,55 @@ ${post.desc}
         }
     }
     setTimeout(()=>{
+        let u = 0;
         for(let folder in locale.folders){
-                addItem('a','mdl-navigation__link',locale.folders[folder],'.mdl-layout__drawer .mdl-navigation',`javascript:clk('${folder}',0)`,'me-'+folder);
+                if(u<3){
+                    addItem('a','mdl-navigation__link','<i class="material-icons">keyboard_arrow_right</i>'+locale.folders[folder],'#jcontent',`javascript:clk('${folder}',0)`,'me-'+folder);
+                }
+                else{
+                    addItem('a','mdl-navigation__link','<i class="material-icons">keyboard_arrow_right</i>'+locale.folders[folder],'#scontent',`javascript:clk('${folder}',0)`,'me-'+folder);
+                }
+            u++;
         }
-        addItem('a','mdl-navigation__link',locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('about',1);`,'me-about');
-        addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
+        addItem('a','mdl-navigation__link','<i class="material-icons mic">star</i>'+locale.favs,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('favourites',5);`,'me-favourites');
+        addItem('a','mdl-navigation__link','<i class="material-icons mic">settings</i>'+locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('about',1);`,'me-about');
+        //addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
         if(locale.l=='ru'){
-            addItem('a','mdl-navigation__link','Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
-            addItem('a','mdl-navigation__link',locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
-        }
+            addItem('a','mdl-navigation__link','<i class="material-icons mic">book</i>Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
+            addItem('a','mdl-navigation__link','<i class="material-icons mic">mode_comment</i>'+locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
+            addItem('a','mdl-navigation__link','<i class="material-icons mic">clear_all</i>'+'Зеркала','.mdl-layout__drawer .mdl-navigation','javascript:clk(0,6)','me-mirrors');
+        }        
         swipes('#ly')
+        setTimeout(()=>{getmdlSelect.init(".getmdl-select")},400);
         if(localStorage['rg-intro'] || navigator.userAgent.match('bot')||window.location.hash.match('blog')){
             autoSelectSection()
         } else{
             openTheBox('about')
         }
         registerSW()
-        setTimeout(isRGAlive,5000)
     }, 1200);
+function generateMirrorSample(){
+    let q = appDB.map(x=>'agcsz'[getCfID(x[2])]+x[0]+" : "+x[1]).sort().join("\r\n");
+    q = URL.createObjectURL(new Blob(['\ufeff'+q],{encoding:"UTF-8",type:"text/plain;charset=UTF-8"}))
+    let l = appDB.length
+    let e = $("#msample");
+    e.innerHTML = `<br>Ссылка на файл (${l} приложений). Если не открывается, отключите блокировщик рекламы (её тут и так нет).`
+    e.href=q;
+    e.target='_blank';
+    e.click();
+}    
+function switchLang(){
+    localStorage['rg-lng'] = locale.l==='en'?'ru':'en';
+    window.location.reload();
+}
+
+    var menuA = [
+        selectSection,
+        openTheBox,
+        showCustomTab,
+        showBlogPosts,
+        showComments,
+        showFvs,
+        showMirrors
+    ]
 }

@@ -1,24 +1,14 @@
- **RG-Backup** 
- Backup of information about j2me apps and games from rugame.mobi
- created to prevent data loss if something happens to the site
+ **RG-Backup**  
+ Backup of information about old mobile apps and games for platforms such as J2ME, based on rugame.mobi data. Created to preserve the information from that website, before it dies.  
+ This project itself does not include any game files, but it provides an option to add an external mirror to work with.  
+ After a few months of development this project evolved into a ROM library manager.  
+ This project uses ES6, JS Promises, Fetch API, Service Worker API. Some featerues are not translated yet and are not available in English.  
+  
+ Extarnal libraries used:
+ - [MDL](https://getmdl.io)  
+ - [getmdl-Select](https://github.com/CreativeIT/getmdl-select)
 
-This project contains:
-1. The parser to get and save data from the server  //v2 -> (moved to the pareser folder)
-2. The client html file, to manage, sort and search all saved data.
-The client is availible [here](https://remixer-dec.github.io/rg-backup)
+ This project is a serverless Progressive Web Application, that doesn't use any JS frameworks.  
+ The client is availible [here](https://remixer-dec.github.io/rg-backup)
 
-<details> 
-  <summary>Parser usage</summary>
-The parser is based on Node.JS
-First, move all files from parser folder, to the main folder.
-To use it run *`npm install`* in the main folder, 
-then change paths in app.js and allappsinfo.js and top.js for every global category,
-make sure you have folders for each global category, 
-then run `node app.js` and wait untill it stops, 
-then run `node allappsinfo.js`,  
-then run `node top.js`, 
-you'll get some txt files (icons.txt and appfileslinks.txt) use them in your favourite download manager (such as wget or aria2), 
-then run node `node packicons.js` in every global category folder.
-</details>
-
-Lisence: public domain
+Lisence: CC BY-NC 4.0
