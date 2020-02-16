@@ -28,7 +28,7 @@ locales = {
             sgames:[
                 [2107,'Action'],[47591,'J2ME ports'],[2115,'RPG'],[2108,'Cardgames'],[2114,'Arcade'],[2109,'Racing'],[47589,'Mods'],[2118,'Fighting'],[3129,'Quests'],[15717,'Puzzles'],[29540,'Simulators'],[2116,'Sports'],[5136,'Strategy'],[2117,'Shooters'],[48195,'S3 Puzzles'],[46761,'S3 Strategy & RPG'],[43217,'S3 Simulators'],[43215,'S3 Racing'],[43214,'S3 Sports'],[43213,'S3 Action'],[43212,'S3 Arcade']
             ]
-   
+
         },
         tooltips:{
             'appLink':'Go to the source', 'appViews':'Views', 'appDls':'Downloads',
@@ -155,7 +155,7 @@ locales = {
         pload: 'Подгружаемый',
         ppage: 'Постраничный',
         found: 'Всего найдено:',
-        notfound: 'нет результатов',
+        notfound: 'нет результатов в загруженных разделах',
         favs: 'Избранное',
         nomirror: 'Зеркало не установлено.'
     }
@@ -165,8 +165,8 @@ function check(){"use strict";try{eval("let es6 = (x)=>x+`${x}`")}catch(a){retur
 if(!check()){
     alert(locale.notSupported)
 } else{
-    if(!('foreach' in NodeList.prototype)){//Firefox OS fix 
-        NodeList.prototype.forEach = Array.prototype.forEach 
+    if(!('foreach' in NodeList.prototype)){//Firefox OS fix
+        NodeList.prototype.forEach = Array.prototype.forEach
     }
     if(localStorage['rg-lng']){
         locale = locales[localStorage['rg-lng']];

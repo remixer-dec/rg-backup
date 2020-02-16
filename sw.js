@@ -1,4 +1,4 @@
-var staticCache = 'rg-main-v5'
+var staticCache = 'rg-main-v6'
 var allCaches = [staticCache]
 
 self.addEventListener('install', (event) => {
@@ -23,7 +23,9 @@ self.addEventListener('install', (event) => {
         './icon.png'])
   }))
 })
-
+caches.keys().then((ckeys) => {
+    ckeys.filter(x => x == 'rg-main-v5').map(x => caches['delete'](x).then(r => self.skipWaiting()))
+})
 self.addEventListener('activate',(event)=>{
 	event.waitUntil(caches.keys().then((cacheNs)=>{
 		return Promise.all(cacheNs.filter((cacheN)=>{
@@ -39,9 +41,6 @@ self.addEventListener('fetch', (event)=>{
     if(u.match('out.php')){
         let red = u.match(/\&(http:\/\/.+$)/im)[1]
         event.respondWith(Response.redirect(red,302))
-    } else if(u.match('/smile/')){
-        let s = u.match(/smile\/([a-z0-9\-_\.\/]+)/i)[1]
-        event.respondWith(fetch('https://httpsify.xeodou.me/url?redirect=http://rugame.mobi/smile/'+s,{ mode: 'no-cors'}))
     } else{
         event.respondWith(caches.match(event.request).then((response)=>{
           return response || fetch(event.request)

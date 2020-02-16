@@ -219,7 +219,7 @@ if(check()){ //es6
                 list+='</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>'
             }
             if(prmode==1&&apppages>1){
-                list+='</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>';   
+                list+='</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>';
             }
             if(cat.id=="0"){cat.id="top"}
             setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
@@ -228,7 +228,7 @@ if(check()){ //es6
                 all = alphasort?all.sort(alphasorter):all;
                 let apppages = Math.ceil(all.length/MAX_ITEMS_P);
                 all = all.map((a,b)=>b==0?'<div class="pactive">'+a[0]:b%MAX_ITEMS_P==0?"</div><div"+(prmode>0?' class="hidden"':'')+">"+a[0]:a[0]).join('')+(prmode==2?'</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>':(prmode==1?'<div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>':''));
-                //TODO: remake ^this thing 
+                //TODO: remake ^this thing
                 setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
                 ttt+=50;
                 setTimeout(()=>{
@@ -251,12 +251,12 @@ if(check()){ //es6
     }
     function autoloader(e){
         if(prmode==1){
-            lists.addEventListener('scroll',(e)=>{
-                if(lists.offsetHeight + lists.scrollTop > lists.scrollHeight-60){
+            Array.from(lists.children).forEach((e)=>e.addEventListener('scroll',(ev)=>{
+                if(e.offsetHeight + e.scrollTop > e.scrollHeight - 60){
                     pageRenderer(0,true)
                 }
-            },supportsPassive ? {passive:!0} : !1)
-        }  
+            }, supportsPassive ? {passive: !0} : !1))
+        }
     }
     function optsearch(){
         lastInput = new Date().getTime()
@@ -520,7 +520,7 @@ if(check()){ //es6
     function setDesc(o){
         let sc = '';
         if('desc' in o){
-            let desc = b64u(o['desc']);
+            let desc = b64u(o['desc']).replace(/\/smile\//g,'https://web.archive.org/web/0if_/http://rugame.mobi/smile/');
             if(!(cf in loaded)){
                 $('#appDesc').innerHTML = desc;
             }else{
@@ -589,7 +589,7 @@ if(check()){ //es6
         if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
-            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=kononru">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/embed/rugame_/chat?no-mobile-redirect=true"/>'
+            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/embed/rugame_/chat?no-mobile-redirect=true"/>'
             vkinit = true;
         }
     }
@@ -601,35 +601,185 @@ if(check()){ //es6
     function drawerON(){
         return ly.MaterialLayout.drawer_.classList.contains('is-visible')
     }
-    function swipes(a){
-        a = $(a)
-        var gp,grs,grj
-        function touchstart(evt){
-            xDown = evt.touches[0].clientX;
-            yDown = evt.touches[0].clientY;
-            gp = new Promise((rs,rj)=>{
-                grs = rs
-                grj = rj
-            })
-            gp.then((t)=>{
-                if(t<0 && !drawerON()){
-                    ly.MaterialLayout.toggleDrawer()
-                }
-                if(t>0 && drawerON()){
-                    ly.MaterialLayout.toggleDrawer()
-                }
-            })
+    function initSwipes(a){
+        // navbar swipe opener
+        let n = {
+            open: false,
+            startloc: [],
+            complete: false,
+            iterator: 0,
+            width: 240,
+            pos: 0,
+            element: $('.mdl-layout__drawer'),
+            bg: $('.mdl-layout__obfuscator')
         }
-        function touchmove(a){
-                var b=a.touches[0].clientX,c=a.touches[0].clientY,d=xDown-b,e=yDown-c;
-                Math.abs(d)>Math.abs(e)&&(128<d?grs(1):-128>d&&grs(-1))
+
+        window.addEventListener('touchstart', function(e) {
+            n.startloc = [e.touches[0].clientX, e.touches[0].clientY]
+            n.complete = false
+            n.open = $('.mdl-layout__drawer').classList.contains('is-visible')
+            n.iterator = 0
+            n.pos = 0
+            n.allowed = $('#infobox').classList.contains('hidden')
+        }, supportsPassive ? {passive: !0} : !1)
+
+        window.addEventListener('touchmove', function(e) {
+            if ((!n.open && n.startloc[0] > 60) || (n.open && n.startloc[0] > 250) || !n.allowed) return
+            n.iterator++
+            //detect horizontal swipe
+            let loc = [e.touches[0].clientX, e.touches[0].clientY]
+            if (n.iterator > 4 && !n.complete) {
+                let diff = [loc[0] - n.startloc[0], loc[1] - n.startloc[1]]
+                if(Math.abs(diff[0]) > Math.abs(diff[1])) {
+                    n.complete = true
+                    n.element.style.transition = 'none'
+                    n.bg.style.transition = 'none'
+                }
             }
-        function touchend(){
-            grs(0)
+            if (n.complete) {
+                n.pos = n.width - loc[0]
+                if (n.startloc[0] > 20 && !n.open) {
+                    n.pos += n.startloc[0]
+                }
+                if (n.startloc[0] < 200 && n.open) {
+                    n.pos -= n.width - n.startloc[0]
+                }
+                n.pos = n.pos < 0 ? 0 : n.pos
+                n.element.style.transform = `translate(-${n.pos}px)`
+                n.bg.style.opacity = 1 - n.pos / 250
+            }
+        }, supportsPassive ? {passive: !0} : !1)
+        window.addEventListener('touchend', function() {
+            if (n.complete) {
+                n.element.style.transition = '.4s all'
+                n.bg.style.transition = '.4s all'
+                n.element.style.transform = ''
+                n.bg.style.opacity = ''
+                if (n.pos < 135) {
+                    n.element.classList.add('is-visible')
+                    n.bg.classList.add('is-visible')
+                } else {
+                    n.element.classList.remove('is-visible')
+                    n.bg.classList.remove('is-visible')
+                }
+            }
+        }, supportsPassive ? {passive: !0} : !1)
+
+        //tab swipe switcher
+        let Tool = {
+            translateX: function(t, e, n) {
+               t.style.display = "block",
+               t.style.transition = n ? "transform 0.2s" : "",
+               t.style.transform = "translate3d(" + e + "px, 0, 0)"
+           },
+           prevElement: function(t) {
+               return t.previousElementSibling
+           },
+           nextElement: function(t) {
+               return t.nextElementSibling
+           },
+           resetStyles: function() {
+               for (var t = this.firstElementChild; t;) {
+                   t.style.display = ""
+                   t.style.transition = ""
+                   t.style.transform = ""
+                   t = Tool.nextElement(t)
+               }
+           }
         }
-        a.addEventListener('touchstart', touchstart, supportsPassive ? {passive:!0} : !1);
-        a.addEventListener('touchmove', touchmove, supportsPassive ? {passive:!0} : !1);
-        a.addEventListener('touchend', touchend, supportsPassive ? {passive:!0} : !1);
+        lists.addEventListener('touchstart', function(t) {
+             this.startX = t.changedTouches[0].clientX
+             this.startY = t.changedTouches[0].clientY
+             this.canGoRight = $('#alltabs > .is-active').nextElementSibling
+             this.canGoRight = this.canGoRight ? !this.canGoRight.classList.contains('hidden') : false
+             this.canGoLeft = $('#alltabs > .is-active').previousElementSibling
+             this.canGoLeft = this.canGoLeft ? !this.canGoLeft.classList.contains('hidden') : false
+             if (this.startX < 60 || cf == 'custom') {
+                 this.canGoRight = false
+                 this.canGoLeft = false
+             }
+        }, supportsPassive ? {passive: !0} : !1)
+
+        lists.addEventListener('touchmove', function(t) {
+            if (!(this.childElementCount < 2)) {
+                if (!this.touchDir) {
+                    var e = Math.abs(t.changedTouches[0].clientX - this.startX),
+                        n = Math.abs(t.changedTouches[0].clientY - this.startY)
+                    this.touchDir = e > n ? "x" : "y"
+                }
+                if (!this.selected){
+                    this.selected = $('#lists > .is-active')
+                }
+                if ("x" === this.touchDir) {
+                    var i = Math.round(t.changedTouches[0].clientX - this.startX),
+                        prev = Tool.prevElement(this.selected),
+                        next = Tool.nextElement(this.selected)
+                    if (!prev && i > 0 || !next && i < 0 || next && i < 0 && !this.canGoRight || prev && i > 0 && !this.canGoLeft) {
+                        i = 0
+                    }
+                    Tool.translateX(this.selected, i)
+                    if (prev) Tool.translateX(prev, i - this.offsetWidth);
+                    if (next) Tool.translateX(next, i + this.offsetWidth)
+                }
+            }
+            return true
+        }, supportsPassive ? {passive: !0} : !1)
+        lists.addEventListener("transitionend", (e) => Tool.resetStyles.call(lists))
+        lists.addEventListener('touchend',function(t) {
+            if (!(this.childElementCount < 2 || t.touches.length)) {
+                if ("x" === this.touchDir) {
+                    let activeTab = $('#alltabs > .is-active')
+                    var e = Math.round(t.changedTouches[0].clientX - this.startX),
+                        prev = Tool.prevElement(this.selected),
+                        next = Tool.nextElement(this.selected)
+                    if (!prev && e > 0 || !next && e < 0 || next && e < 0 && !this.canGoRight || prev && e > 0 && !this.canGoLeft) {
+                        e = 0
+                    }
+                    if (e > 0) {
+                        if (e > 100) {
+                            if (e === this.offsetWidth) {
+                                Tool.resetStyles.call(lists)
+                            } else {
+                                activeTab.classList.remove('is-active')
+                                activeTab = activeTab.previousElementSibling
+                                activeTab.classList.add('is-active')
+                                Tool.translateX(prev, 0, !0)
+                                Tool.translateX(this.selected, this.offsetWidth, !0)
+                                $('#alltabs').scrollTo({left: activeTab.offsetLeft - 60, top: 0, behavior: 'smooth'})
+                            }
+                            this.selected = prev
+                        } else {
+                            Tool.translateX(prev, -this.offsetWidth, !0)
+                            Tool.translateX(this.selected, 0, !0)
+                        }
+                    } else {
+                        if (e < 0){
+                            if (e < -100) {
+                                if (e === -this.offsetWidth) {
+                                    Tool.resetStyles.call(lists)
+                                } else {
+                                    activeTab.classList.remove('is-active')
+                                    activeTab.nextElementSibling.classList.add('is-active')
+                                    Tool.translateX(this.selected, -this.offsetWidth, !0)
+                                    Tool.translateX(next, 0, !0)
+                                    $('#alltabs').scrollTo({left: activeTab.offsetLeft - 60 + activeTab.offsetWidth, top: 0, behavior: 'smooth'})
+                                }
+                                this.selected = next
+                            } else {
+                                Tool.translateX(this.selected, 0, !0)
+                                Tool.translateX(next, this.offsetWidth, !0)
+                            }
+                        } else {
+                             Tool.resetStyles.call(lists)
+                        }
+                    }
+                    $('#lists > .is-active').classList.remove('is-active')
+                    this.selected.classList.add('is-active')
+                }
+                this.touchDir = null
+                this.selected = null
+            }
+        }, supportsPassive ? {passive: !0} : !1)
     }
     function saveConfig(){
         localStorage['rg-icons'] = icons = cicons.checked
@@ -684,11 +834,11 @@ ${post.desc}
     function showMirrors(){
         let localM = localStorage['rg-lmirror'] || false;
         document.querySelector('#t_-5').innerHTML = `<div class='bpx'>
-        На данный момент можно выбрать только 1 основное файловое зеркало:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Указать путь</button><br>
+        На данный момент можно выбрать одно основное файловое зеркало:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Указать путь</button><br>
         Примером использования может стать локальное зеркало. Это способ связать ваш локальный бэкап распакованных файлов и данный сервис.
         Необходимо указать путь до папки, или до вашего сервера. В корне указанной папки должны находиться отдельные папки для каждой категории.
-        Их имена должны быть apps, games, cgames, sapps, sgames, внутри каждой из которых находятся распакованные файлы приложений с оригинальными именами. После привязки, выбранный вами файл будет загружаться из вашего же хранилища. 
-        <br><br>Если вы решите создать или разместить файловое зеркало и желаете опубликовать его на этом сайте, прочитайте подробнее в блоге, в конце поста о версии 2.8</div>
+        Их имена должны быть apps, games, cgames, sapps, sgames, внутри каждой из которых находятся распакованные файлы приложений с оригинальными именами. После привязки, выбранный вами файл будет загружаться из вашего же хранилища.
+        <br><br>Если вы решите создать или разместить файловое зеркало и желаете опубликовать его на этом сайте, прочитайте подробнее в блоге, в конце поста о версии 2.8<br>По вопросам размещения файлов просьба обращаться напрямую к владельцам публичных зеркал.</div>
         `;
         showCustomTab('mirrors',5)
     }
@@ -708,7 +858,7 @@ ${post.desc}
     }
 
     function selectMirrorPath(){
-        var lmp = prompt('Введите путь до основной папки');
+        var lmp = prompt('Введите путь до основной папки',atob('aHR0cDovL29sZGZhZy5jZi90cmFzaC8'));
         if(lmp){
             if(!lmp.match(/^http|^ftp/i)){
                 lmp = lmp.replace(/file:\/\/\/?/g,'')
@@ -740,7 +890,7 @@ ${post.desc}
 
     	    reg.addEventListener('updatefound', ()=>{
     	    	let rfr = (w)=>{
-    	    		worker.addEventListener('statechange', ()=>{
+    	    		w.addEventListener('statechange', ()=>{
     	    			if(w.state === 'installed'){
     	    				updateReady(w)
     	    			}
@@ -775,9 +925,12 @@ ${post.desc}
             addItem('a','mdl-navigation__link','<i class="material-icons mic">book</i>Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
             addItem('a','mdl-navigation__link','<i class="material-icons mic">mode_comment</i>'+locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
             addItem('a','mdl-navigation__link','<i class="material-icons mic">clear_all</i>'+'Зеркала','.mdl-layout__drawer .mdl-navigation','javascript:clk(0,6)','me-mirrors');
-        }        
-        swipes('#ly')
-        setTimeout(()=>{getmdlSelect.init(".getmdl-select")},400);
+        }
+        initSwipes()
+        setTimeout(() => {
+            getmdlSelect.init(".getmdl-select")
+            $$('.mdl-menu__item')[prmode||1].click()
+        }, 400);
         if(localStorage['rg-intro'] || navigator.userAgent.match('bot')||window.location.hash.match('blog')){
             autoSelectSection()
         } else{
@@ -794,7 +947,7 @@ function generateMirrorSample(){
     e.href=q;
     e.target='_blank';
     e.click();
-}    
+}
 function switchLang(){
     localStorage['rg-lng'] = locale.l==='en'?'ru':'en';
     window.location.reload();
