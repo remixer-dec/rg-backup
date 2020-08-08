@@ -833,13 +833,7 @@ ${post.desc}
     }
     function showMirrors(){
         let localM = localStorage['rg-lmirror'] || false;
-        document.querySelector('#t_-5').innerHTML = `<div class='bpx'>
-        На данный момент можно выбрать одно основное файловое зеркало:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Указать путь</button><br>
-        Примером использования может стать локальное зеркало. Это способ связать ваш локальный бэкап распакованных файлов и данный сервис.
-        Необходимо указать путь до папки, или до вашего сервера. В корне указанной папки должны находиться отдельные папки для каждой категории.
-        Их имена должны быть apps, games, cgames, sapps, sgames, внутри каждой из которых находятся распакованные файлы приложений с оригинальными именами. После привязки, выбранный вами файл будет загружаться из вашего же хранилища.
-        <br><br>Если вы решите создать или разместить файловое зеркало и желаете опубликовать его на этом сайте, прочитайте подробнее в блоге, в конце поста о версии 2.8<br>По вопросам размещения файлов просьба обращаться напрямую к владельцам публичных зеркал.</div>
-        `;
+        document.querySelector('#t_-5').innerHTML = locale.mirrormenu
         showCustomTab('mirrors',5)
     }
     function showCustomTab(menuItem,id,norelocate){
@@ -858,7 +852,7 @@ ${post.desc}
     }
 
     function selectMirrorPath(){
-        var lmp = prompt('Введите путь до основной папки',atob('aHR0cDovL29sZGZhZy5jZi90cmFzaC8'));
+        var lmp = prompt('Введите путь до основной папки',atob('aHR0cDovL29sZGZhZy50b3AvdHJhc2gv'));
         if(lmp){
             if(!lmp.match(/^http|^ftp/i)){
                 lmp = lmp.replace(/file:\/\/\/?/g,'')
@@ -924,8 +918,8 @@ ${post.desc}
         if(locale.l=='ru'){
             addItem('a','mdl-navigation__link','<i class="material-icons mic">book</i>Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
             addItem('a','mdl-navigation__link','<i class="material-icons mic">mode_comment</i>'+locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
-            addItem('a','mdl-navigation__link','<i class="material-icons mic">clear_all</i>'+'Зеркала','.mdl-layout__drawer .mdl-navigation','javascript:clk(0,6)','me-mirrors');
         }
+        addItem('a','mdl-navigation__link','<i class="material-icons mic">clear_all</i>'+locale.mirrors,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,6)','me-mirrors');
         initSwipes()
         setTimeout(() => {
             getmdlSelect.init(".getmdl-select")

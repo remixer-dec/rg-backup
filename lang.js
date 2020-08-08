@@ -76,8 +76,10 @@ locales = {
         ppage: 'pagination',
         found: 'results:',
         notfound: 'No results',
-        favs: 'Favourites',
-        nomirror: 'Mirrors are not supported yet in your language.'
+        favs: 'Favorites',
+        mirrors: 'Mirrors',
+        mirrormenu: "<div class='bpx'>In this version you can set up 1 file mirror:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Set up path</button><br>Your local backup server can be used together with this app, to provide you with better file search options.<br></br> With any file-ralated questions please contact mirror owners. We are not responsible for those files</div>", 
+        nomirror: 'Please, set up a mirror URL to download files from that mirror!'
     },
     ru:{
         l:'ru',
@@ -157,6 +159,8 @@ locales = {
         found: 'Всего найдено:',
         notfound: 'нет результатов в загруженных разделах',
         favs: 'Избранное',
+        mirrors: 'Зеркала', 
+        mirrormenu: "<div class='bpx'>На данный момент можно выбрать одно основное файловое зеркало:<br> <button class='mdl-button mdl-button--colored' onclick='selectMirrorPath()'>Указать путь</button><br>Примером использования может стать локальное зеркало. Это способ связать ваш локальный бэкап распакованных файлов и данный сервис.Необходимо указать путь до папки, или до вашего сервера. В корне указанной папки должны находиться отдельные папки для каждой категории.Их имена должны быть apps, games, cgames, sapps, sgames, внутри каждой из которых находятся распакованные файлы приложений с оригинальными именами. После привязки, выбранный вами файл будет загружаться из вашего же хранилища.<br><br>Если вы решите создать или разместить файловое зеркало и желаете опубликовать его на этом сайте, прочитайте подробнее в блоге, в конце поста о версии 2.8<br>По вопросам размещения файлов просьба обращаться напрямую к владельцам публичных зеркал.</div>", 
         nomirror: 'Зеркало не установлено.'
     }
 }
