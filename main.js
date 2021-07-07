@@ -9,6 +9,7 @@ if(check()){ //es6
     var icons = loadConfig('rg-icons',false)
     var alphasort = loadConfig('rg-alphasort',false)
     var prmode = localStorage['rg-performance'] || false
+    var archiveHelper = loadConfig('rg-archelper', false)
     prmode = parseInt(prmode);
     prmode = prmode == NaN ? 1 : prmode;
     var favs = JSON.parse(localStorage['rg-fav'] || '{}');
@@ -122,6 +123,7 @@ if(check()){ //es6
         cscreenshots.checked == screenshots? 1 : cscreenshots.parentElement.click()
         cicons.checked == icons? 1 : cicons.parentElement.click()
         cazsort.checked == alphasort? 1 : cazsort.parentElement.click()
+        carchelper.checked = archiveHelper? carchelper.parentElement.click() : 0
         if(window.location.hash.length>1){
             let h = parseHash(window.location.hash)[0]||'apps'
             if(h!='custom'){
@@ -313,15 +315,8 @@ if(check()){ //es6
             }
         }
     }
-    function getMLink(e,filename){
+    function getMLink(event, e, filename){
         const filters = []
-        const links = {
-            apps: 'aHR0cHM6Ly9tZWdhLm56LyNGIWplSkFFWTVJIWczcWdzNWhPTUV6UzdDZVRCTnFzWEE=',
-            games: 'aHR0cHM6Ly9tZWdhLm56LyNGIXZQd0NGSXJBIUxZSm9MSnZHbkRiUlRqS0FueWhELWc=',
-            cgames: 'aHR0cHM6Ly9tZWdhLm56LyNGITdMcFFIYXdiITBRZm9xYjhoUWt0Um9BY0VDb01MdEE=',
-            sapps: ["aHR0cHM6Ly9tZWdhLm56LyNGIVBxcFZTQlpUIWJZeFgteFFqMlIzbnB2SE8tTlh4OGc="],
-            sgames: ["aHR0cHM6Ly9tZWdhLm56LyNGITY3b25GQlJSIUZqVW9oeVl3bmxmM1lXSTFQOWkxLWc="]
-        }
         filters['apps'] = ['1.1','BEST_GAMES_17_LITE','E1000_mega_konon','GhostSensor_K500',
         'ICQMobile','LIKE_PC_GAME_4_FULL','MOBGAMES_5','MoM4lite','NUMISMAT_40','qipmobile_sie_a',
         'rugame_mobi_mir_strategii_6','rugame_mobi_Vista','SlovoEd_Deluxe_Eng','the_best_novosti11','vvs_notepadRu']
@@ -376,7 +371,7 @@ if(check()){ //es6
                 for(let fn of currentFilter){
                     fn = fn.toLowerCase()
                     if(filename.startsWith(fn)){
-                        e.href = (typeof links[cf]!='string')?b64u(links[cf][0]):b64u(links[cf]);
+                    	event.preventDefault()
                         return alert(cf[0]=='s'?(locale.arc0 + filename + ')'):(locale.arc0 + filename + locale.arc1+i+', '+(i+1)))
                     }
                     if(advancedCompare(filename,fn)){
@@ -388,14 +383,7 @@ if(check()){ //es6
                 }
             }
         }
-        if(typeof links[cf]!='string'){
-            e.href = b64u(links[cf][0])
-        } else{
-            e.href = b64u(links[cf])
-        }
-        if(cf=='cgames' && filename.match('\.[0-9]+\.jar')){
-            alert('Номер файла может не совпадать с указанным. Мы работает над исправлением, но это займёт какое-то время.')
-        }
+        event.preventDefault()
         if(cf[0]!='s'){
             alert(locale.arc0 + filename + locale.arc2+magicNumber)
         } else{
@@ -495,15 +483,19 @@ if(check()){ //es6
                         link = `#dls`
                         target = '';
                     }
+                    let extraclass = ''
+                    if (l.not_renamed) {
+                    	extraclass = ' red'
+                    }
                     dlc+=`
-                    <a href="${link}" rel="noreferrer" target="${target}" class="mdl-cell mdl-cell--5-col ai" id="x${t+'_'+i}" onclick="${onclick}">
+                    <a href="${link}" rel="noreferrer" target="${target}" class="mdl-cell mdl-cell--5-col ai${extraclass}" id="x${t+'_'+i}" onclick="${onclick}">
                     <i class="material-icons">file_download</i>${l.type}
                     </a>
                     <div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t+'_'+i}">${l.file}<br>${size}</div>
                     `;
-                    if(l.type != 'JAD' && l.file != ''){
-                        dlc+=`<a href="#mega" onclick="getMLink(this,'${l.file}')" target="_blank" class="mdl-cell mdl-cell--5-col ai">
-                        <i class="material-icons">cloud_download</i>[MEGA]
+                    if(archiveHelper && l.type != 'JAD' && l.file != ''){
+                        dlc+=`<a href="#mega" onclick="getMLink(event, this,'${l.file}')" class="mdl-cell mdl-cell--5-col ai">
+                        <i class="material-icons">archive</i>ArchiveHelper
                         </a>`
                     }
                 }
@@ -516,7 +508,20 @@ if(check()){ //es6
         }).catch((reason)=>{
             alert(locale.nodata)
         })
-    }
+    } 
+    function setRelated(app) {
+    	if (!app.related || (app.related && app.related.length == 0)) {
+    		$('#related').innerHTML = ''
+    		return
+    	}
+    	
+    	let html = `<p><b>${locale.related}</b></p>`
+    	for (let item of app.related) {
+    		html += `<div class="mdl-list__item"><a href="#/${cf}/${item}">${appDB.find(x=>x[0] == item)[1] }</a></div>`
+    	}
+    	html += "<hr/>"
+    	$('#related').innerHTML = html
+    } 
     function setDesc(o){
         let sc = '';
         if('desc' in o){
@@ -524,7 +529,7 @@ if(check()){ //es6
             if(!(cf in loaded)){
                 $('#appDesc').innerHTML = desc;
             }else{
-                if(!loaded[cf].all.confirmed){
+                if(!loaded[cf].confirmed){
                     $('#appDesc').innerHTML = desc;
                 }
                 loaded[cf].all.then((s)=>{
@@ -532,6 +537,7 @@ if(check()){ //es6
                         sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
                     }
                     $('#appDesc').innerHTML = sc+desc
+                    try {setRelated(o)} catch(e) {console.error(e)}
                 })
             }
         }
@@ -589,7 +595,7 @@ if(check()){ //es6
         if(!vkinit&&VK){
             VK.init({apiId: 0x4F9438, onlyWidgets: true});
             VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
-            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a><iframe style="width:100%;height:550px" src="https://twitch.tv/embed/rugame_/chat?no-mobile-redirect=true"/>'
+            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a>'
             vkinit = true;
         }
     }
@@ -786,6 +792,7 @@ if(check()){ //es6
         localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
         localStorage['rg-intro'] = 1
         localStorage['rg-alphasort'] = alphasort = cazsort.checked
+        localStorage['rg-archelper'] = archiveHelper = carchelper.checked
         localStorage['rg-performance'] = prmode = parseInt(document.getElementsByName('pmode')[0].value)
         closeTheBox(1)
         if(cf==''){
