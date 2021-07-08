@@ -12,31 +12,28 @@ const MAX_ITEMS_P = 20
 var screenshots = loadConfig('rg-screenshots', true)
 var icons = loadConfig('rg-icons', false)
 var alphasort = loadConfig('rg-alphasort', false)
-var prmode = localStorage['rg-performance'] || false
+var pageRenderingMode = parseInt(localStorage['rg-performance'] || false)
 var archiveHelper = loadConfig('rg-archelper', false)
-prmode = parseInt(prmode)
-prmode = prmode == NaN ? 1 : prmode
+pageRenderingMode = pageRenderingMode == NaN ? 1 : pageRenderingMode
 var favs = JSON.parse(localStorage['rg-fav'] || '{}')
 var cf = '' //current folder
 var loaded = []
 var lastInput = 0
 var lastTarget = false
-var tt, ttt //timers to optimize loading
+var delay1, delay2 //timers to optimize loading
 const appDB = []
 const folders = Object.keys(locale.folders)
 var $ = (q) => document.querySelector(q)
 $$ = typeof $$ != 'function' ? (q) => document.querySelectorAll(q) : $$
-var itx = (() => ('innerText' in document.body ? 'innerText' : 'innerHTML'))()
+var innerContent = 'innerText' in document.body ? 'innerText' : 'innerHTML'
 let vkinit = false
 
 function fetchJSON(filename) {
 	return new Promise((rs, rj) => {
 		fetch(filename).then((f) => {
-			f.json()
-				.then((j) => {
+			f.json().then((j) => {
 					rs(j)
-				})
-				.catch((e) => rj())
+				}).catch((e) => rj())
 		})
 	})
 }
@@ -78,7 +75,7 @@ function addItem(type, xclass, text, to, href, id) {
 }
 
 function loadScreenshots(folder) {
-	autoloader()
+	autoLoader()
 	if (screenshots) {
 		fetchJSON(cf + '/data/screenshots.json').then((sc) => {
 			window['scr_' + folder] = sc
@@ -94,6 +91,13 @@ function switchTabs(hide, show) {
 }
 
 function switchSelectedMenuItem(item) {
+	let noExtraBarItems = ['favourites', 'blog', 'comments', 'mirrors']
+	if (noExtraBarItems.indexOf(item) != -1) {
+		$('#alltabs').parentElement.classList.add('hidden')
+	} else {
+		$('#alltabs').parentElement.classList.remove('hidden')
+	}
+	
 	let oldm = $('.mds')
 	if (oldm) {
 		oldm.classList.remove('mds')
@@ -105,22 +109,22 @@ function switchSelectedMenuItem(item) {
 }
 
 function loadCoreData(folder) {
-	tt = ttt = 0
+	delay1, delay2 = 0
 	if (icons) {
 		fetchJSON(cf + '/data/icons.json').then((ic) => {
 			loadScreenshots(folder)
 			window['icons_' + folder] = ic
-			setTimeout(loadAppList, tt, ic)
+			setTimeout(loadAppList, delay1, ic)
 			setTimeout(() => {
 				$('.' + folder + '-tab').click()
-			}, tt)
+			}, delay1)
 		})
 	} else {
 		loadScreenshots(folder)
-		setTimeout(loadAppList, tt, [])
+		setTimeout(loadAppList, delay1, [])
 		setTimeout(() => {
 			$('.' + folder + '-tab').click()
-		}, tt)
+		}, delay1)
 	}
 }
 
@@ -169,9 +173,9 @@ function alphasorter(a, b) {
 	return a[1].toLowerCase() < b[1].toLowerCase() ? -1 : a[1].toLowerCase() > b[1].toLowerCase() ? 1 : 0
 }
 
-function pageRenderer(p, a) {
-	p = parseInt(p)
-	p = p - 1
+function pageRenderer(page, active) {
+	page = parseInt(page)
+	page = page - 1
 	let elems = $$('.mdl-layout__tab-panel.is-active >ul > div')
 	let activeElem = $('.mdl-layout__tab-panel.is-active .pactive')
 	if (!activeElem) return
@@ -179,9 +183,9 @@ function pageRenderer(p, a) {
 		activeElem.classList.add('hidden')
 		return false
 	}
-	if (!a) {
+	if (!active) {
 		activeElem.classList.add('hidden')
-		var target = elems[p]
+		var target = elems[page]
 	} else {
 		var target = activeElem.nextElementSibling
 	}
@@ -192,7 +196,7 @@ function pageRenderer(p, a) {
 	target.classList.add('pactive')
 	target.classList.remove('hidden')
 }
-function loadAppList(ic) {
+function loadAppList(iconDB) {
 	let cats = locale.tabs[cf].map((e) => {
 		return {id: e[0], name: e[1]}
 	})
@@ -211,7 +215,7 @@ function loadAppList(ic) {
 			let list = '<div class="pactive">'
 			let ii = 0
 			for (var app of al[cat.id]) {
-				let icon = ic['i' + app[0]]
+				let icon = iconDB['i' + app[0]]
 				if (icon) {
 					icon = 'data:image/png;base64,' + icon
 				} else {
@@ -227,7 +231,7 @@ function loadAppList(ic) {
 						ricon = 'flag'
 					}
 				}
-				let appitem = `
+				let appItem = `
 			<li class="mdl-list__item" onclick="relocate('#/${cf}/${app[0]}')">
 			  <span class="mdl-list__item-primary-content">
 			  <img class="mdl-list__item-icon appic" data-src="${icon}">
@@ -238,66 +242,64 @@ function loadAppList(ic) {
 			  </span>
 			</li>
 			`
-				list += appitem
+				list += appItem
 				ii++
 				if (ii % MAX_ITEMS_P == 0) {
-					list += '</div><div' + (prmode > 0 ? ' class="hidden"' : '') + '>'
+					list += '</div><div' + (pageRenderingMode > 0 ? ' class="hidden"' : '') + '>'
 				}
 				if (cat.id != 0) {
 					if (app.length == 3) {
 						app.splice(2, 1)
 					}
 					appDB.push(app.concat([cf, cat.name]))
-					all.push([appitem, app[1]])
+					all.push([appItem, app[1]])
 				}
 			}
-			let apppages = Math.ceil(al[cat.id].length / MAX_ITEMS_P)
-			if (prmode == 2 && apppages > 1) {
+			let appPageCount = Math.ceil(al[cat.id].length / MAX_ITEMS_P)
+			if (pageRenderingMode == 2 && appPageCount > 1) {
 				list +=
 					`</div><div class="paginator" id="page${cf + cat.id}"><img src="10.png" onload="new Pagination(this.parentElement,'page${cf +
-					cat.id}', {totalPage:${apppages}, range:${(apppages > 3 ? 5 : apppages)},callback:pageRenderer})"></div>`
+					cat.id}', {totalPage:${appPageCount}, range:${(appPageCount > 3 ? 5 : appPageCount)},callback:pageRenderer})"></div>`
 			}
-			if (prmode == 1 && apppages > 1) {
+			if (pageRenderingMode == 1 && appPageCount > 1) {
 				list += '</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">' + locale.loadmore + '</div>'
 			}
 			if (cat.id == '0') {
 				cat.id = 'top'
 			}
-			setTimeout(insertAppList, ttt, $(`#${cf}_${cat.id}`).firstChild, list)
-			ttt += 20
+			setTimeout(insertAppList, delay2, $(`#${cf}_${cat.id}`).firstChild, list)
+			delay2 += 20
 			if (cats[cats.length - 1].id == cat.id) {
 				all = alphasort ? all.sort(alphasorter) : all
-				let apppages = Math.ceil(all.length / MAX_ITEMS_P)
+				let appPageCount = Math.ceil(all.length / MAX_ITEMS_P)
 				all = all
-						.map((a, b) => b == 0 ? '<div class="pactive">' + a[0] : b % MAX_ITEMS_P == 0 ? '</div><div' + (prmode > 0 ? ' class="hidden"' : '') + '>' + a[0] : a[0])
+						.map((a, b) => b == 0 ? '<div class="pactive">' + a[0] : b % MAX_ITEMS_P == 0 ? '</div><div' + (pageRenderingMode > 0 ? ' class="hidden"' : '') + '>' + a[0] : a[0])
 						.join('') +
-					(prmode == 2
+					(pageRenderingMode == 2
 						?  `</div><div class="paginator" id="page${cf + cat.id}">
 							<img src="10.png" onload="new Pagination(this.parentElement,'page${cf + cat.id}',\
-							{totalPage: ${apppages}, range:${(apppages > 3 ? 5 : apppages)},callback:pageRenderer})"></div>`
-						: prmode == 1
+							{totalPage: ${appPageCount}, range:${(appPageCount > 3 ? 5 : appPageCount)},callback:pageRenderer})"></div>`
+						: pageRenderingMode == 1
 						? '<div class="loadmore mdl-button" onclick="pageRenderer(1,1)">' + locale.loadmore + '</div>'
 						: '')
 				
 				setTimeout(insertAppList, 10, $(`#${cf}_all`).firstChild, all)
-				ttt += 50
+				delay2 += 50
 				setTimeout(() => {
-					$$('.mi.hidden').forEach((k, v) => {
-						k.className = 'material-icons'
-					})
+					$$('.mi.hidden').forEach((k, v) => k.className = 'material-icons')
 					$$('.appic').forEach((k, v) => {
 						if (k.src == '') {
 							k.src = k.getAttribute('data-src')
 						}
 					})
-				}, ttt)
-				ttt += 850
+				}, delay2)
+				delay2 += 850
 				setTimeout(() => {
 					$('#spinner').classList.add('hidden')
 					all = undefined
 					$('#me-' + cf).innerHTML += '<i class="material-icons rc">check</i>'
 					componentHandler.upgradeDom()
-				}, ttt)
+				}, delay2)
 			}
 		}
 	})
@@ -307,8 +309,8 @@ function insertAppList(el, list, add) {
 	//TODO: add experimental iscroll support here
 }
 
-function autoloader(e) {
-	if (prmode == 1) {
+function autoLoader() {
+	if (pageRenderingMode == 1) {
 		Array.from(lists.children).forEach((e) =>
 			e.addEventListener(
 				'scroll',
@@ -339,7 +341,7 @@ function fastsearch() {
 		return
 	}
 	var text = $('#fixed-header-drawer-exp').value
-	if (prmode == 0 && text != '' && text[0] == '!') {
+	if (pageRenderingMode == 0 && text != '' && text[0] == '!') {
 		text = text.slice(1)
 		let t = new RegExp(text, 'im')
 		if (text.length > 0) {
@@ -470,26 +472,26 @@ function archiveHelperFunction(event, e, filename) {
 	}
 }
 
-function favourite(onlycheck) {
-	function check(x) {
+function favourite(onlyCheck) {
+	function checkFavStatus(x) {
 		return x in favs
 	}
-	let appinfo = fvicon.name.split('|')
-	let xid = parseInt(appinfo[0])
-	let core = 'a' + appinfo[1] + '_' + xid.toString(32)
-	if (onlycheck) {
-		return check(core)
+	let appInfo = fvicon.name.split('|')
+	let xid = parseInt(appInfo[0])
+	let core = 'a' + appInfo[1] + '_' + xid.toString(32)
+	if (onlyCheck) {
+		return checkFavStatus(core)
 	}
-	if (check(core)) {
+	if (checkFavStatus(core)) {
 		delete favs[core]
 		fvicon.innerHTML = 'star_border'
 	} else {
-		favs[core] = appinfo[2]
+		favs[core] = appInfo[2]
 		fvicon.innerHTML = 'star'
 	}
 	localStorage['rg-fav'] = JSON.stringify(favs)
 	if ($('.mds').id == 'me-favourites') {
-		showFvs()
+		showFavourites()
 	}
 }
 
@@ -610,7 +612,7 @@ function setRelated(app) {
 }
 
 function setDesc(o) {
-	let sc = ''
+	let screenshotString = ''
 	if ('desc' in o) {
 		let desc = b64u(o['desc']).replace(/\/smile\//g, 'https://web.archive.org/web/0if_/http://rugame.mobi/smile/')
 		if (!(cf in loaded)) {
@@ -621,9 +623,9 @@ function setDesc(o) {
 			}
 			loaded[cf].all.then((s) => {
 				if (screenshots && 'i' + o.id in window['scr_' + cf]) {
-					sc += `<br><center><img src="data:image/png;base64,${window['scr_' + cf]['i' + o.id]}"></center><br>`
+					screenshotString += `<br><center><img src="data:image/png;base64,${window['scr_' + cf]['i' + o.id]}"></center><br>`
 				}
-				$('#appDesc').innerHTML = sc + desc
+				$('#appDesc').innerHTML = screenshotString + desc
 				try {
 					setRelated(o)
 				} catch (e) {
@@ -636,7 +638,7 @@ function setDesc(o) {
 
 function setField(obj, prp, fld, sp) {
 	let f = $('#' + fld)
-	let p = itx
+	let p = innerContent
 	if (prp in obj) {
 		if (sp && sp in obj[prp]) {
 			f[p] = obj[prp][sp]
@@ -665,24 +667,25 @@ function openTheBox(id) {
 	$('#lybox').scroll(0, 0)
 }
 
-function showFvs() {
-	let fvhtml = ''
+function showFavourites() {
+	let html = ''
 	for (fv in favs) {
 		let fx = fv.substr(1)
 		let f = fx.split('_')
+		
 		let id = parseInt(f[1], 32)
-		f = getCfID(parseInt(f[0]))
-		let n = favs[fv]
-		fvhtml += `
-		<li class="mdl-list__item" onclick="relocate('#/${f}/${id}')">
+		let appType = getCfID(parseInt(f[0]))
+		let name = favs[fv]
+		html += `
+		<li class="mdl-list__item" onclick="relocate('#/${appType}/${id}')">
 		<span class="mdl-list__item-primary-content">
-			  <span class="mdl-list__item-text-body">${n}</span>
+			  <span class="mdl-list__item-text-body">${name}</span>
 		</span>
 		<span class="mdl-list__item-secondary-content">
-			<a class="mdl-list__item-secondary-action" href="#/${f}/${id}"><i class="material-icons">star</i></a>
+			<a class="mdl-list__item-secondary-action" href="#/${appType}/${id}"><i class="material-icons">star</i></a>
 		</span></li>`
 	}
-	document.querySelector('#t_-4').innerHTML = fvhtml
+	document.querySelector('#t_-4').innerHTML = html
 	showCustomTab('favourites', 4)
 }
 
@@ -784,7 +787,7 @@ function initSwipes(a) {
 	)
 
 	//tab swipe switcher
-	let Tool = {
+	let touchTool = {
 		translateX: function (t, e, n) {
 			;(t.style.display = 'block'), (t.style.transition = n ? 'transform 0.2s' : ''), (t.style.transform = 'translate3d(' + e + 'px, 0, 0)')
 		},
@@ -799,7 +802,7 @@ function initSwipes(a) {
 				t.style.display = ''
 				t.style.transition = ''
 				t.style.transform = ''
-				t = Tool.nextElement(t)
+				t = touchTool.nextElement(t)
 			}
 		},
 	}
@@ -835,21 +838,21 @@ function initSwipes(a) {
 				}
 				if ('x' === this.touchDir) {
 					var i = Math.round(t.changedTouches[0].clientX - this.startX),
-						prev = Tool.prevElement(this.selected),
-						next = Tool.nextElement(this.selected)
+						prev = touchTool.prevElement(this.selected),
+						next = touchTool.nextElement(this.selected)
 					if ((!prev && i > 0) || (!next && i < 0) || (next && i < 0 && !this.canGoRight) || (prev && i > 0 && !this.canGoLeft)) {
 						i = 0
 					}
-					Tool.translateX(this.selected, i)
-					if (prev) Tool.translateX(prev, i - this.offsetWidth)
-					if (next) Tool.translateX(next, i + this.offsetWidth)
+					touchTool.translateX(this.selected, i)
+					if (prev) touchTool.translateX(prev, i - this.offsetWidth)
+					if (next) touchTool.translateX(next, i + this.offsetWidth)
 				}
 			}
 			return true
 		},
 		supportsPassive ? {passive: !0} : !1
 	)
-	lists.addEventListener('transitionend', (e) => Tool.resetStyles.call(lists))
+	lists.addEventListener('transitionend', (e) => touchTool.resetStyles.call(lists))
 	lists.addEventListener(
 		'touchend',
 		function (t) {
@@ -857,47 +860,47 @@ function initSwipes(a) {
 				if ('x' === this.touchDir) {
 					let activeTab = $('#alltabs > .is-active')
 					var e = Math.round(t.changedTouches[0].clientX - this.startX),
-						prev = Tool.prevElement(this.selected),
-						next = Tool.nextElement(this.selected)
+						prev = touchTool.prevElement(this.selected),
+						next = touchTool.nextElement(this.selected)
 					if ((!prev && e > 0) || (!next && e < 0) || (next && e < 0 && !this.canGoRight) || (prev && e > 0 && !this.canGoLeft)) {
 						e = 0
 					}
 					if (e > 0) {
 						if (e > 100) {
 							if (e === this.offsetWidth) {
-								Tool.resetStyles.call(lists)
+								touchTool.resetStyles.call(lists)
 							} else {
 								activeTab.classList.remove('is-active')
 								activeTab = activeTab.previousElementSibling
 								activeTab.classList.add('is-active')
-								Tool.translateX(prev, 0, !0)
-								Tool.translateX(this.selected, this.offsetWidth, !0)
+								touchTool.translateX(prev, 0, !0)
+								touchTool.translateX(this.selected, this.offsetWidth, !0)
 								$('#alltabs').scrollTo({left: activeTab.offsetLeft - 60, top: 0, behavior: 'smooth'})
 							}
 							this.selected = prev
 						} else {
-							Tool.translateX(prev, -this.offsetWidth, !0)
-							Tool.translateX(this.selected, 0, !0)
+							touchTool.translateX(prev, -this.offsetWidth, !0)
+							touchTool.translateX(this.selected, 0, !0)
 						}
 					} else {
 						if (e < 0) {
 							if (e < -100) {
 								if (e === -this.offsetWidth) {
-									Tool.resetStyles.call(lists)
+									touchTool.resetStyles.call(lists)
 								} else {
 									activeTab.classList.remove('is-active')
 									activeTab.nextElementSibling.classList.add('is-active')
-									Tool.translateX(this.selected, -this.offsetWidth, !0)
-									Tool.translateX(next, 0, !0)
+									touchTool.translateX(this.selected, -this.offsetWidth, !0)
+									touchTool.translateX(next, 0, !0)
 									$('#alltabs').scrollTo({left: activeTab.offsetLeft - 60 + activeTab.offsetWidth, top: 0, behavior: 'smooth'})
 								}
 								this.selected = next
 							} else {
-								Tool.translateX(this.selected, 0, !0)
-								Tool.translateX(next, this.offsetWidth, !0)
+								touchTool.translateX(this.selected, 0, !0)
+								touchTool.translateX(next, this.offsetWidth, !0)
 							}
 						} else {
-							Tool.resetStyles.call(lists)
+							touchTool.resetStyles.call(lists)
 						}
 					}
 					$('#lists > .is-active').classList.remove('is-active')
@@ -917,7 +920,7 @@ function saveConfig() {
 	localStorage['rg-intro'] = 1
 	localStorage['rg-alphasort'] = alphasort = cazsort.checked
 	localStorage['rg-archelper'] = archiveHelper = carchelper.checked
-	localStorage['rg-performance'] = prmode = parseInt(document.getElementsByName('pmode')[0].value)
+	localStorage['rg-performance'] = pageRenderingMode = parseInt(document.getElementsByName('pmode')[0].value)
 	closeTheBox(1)
 	if (cf == '') {
 		autoSelectSection()
@@ -936,8 +939,8 @@ function toggleBlogPost(id) {
 	}
 }
 
-function showBlogPosts(hchange) {
-	if (!isblogloaded) {
+function showBlogPosts(hashChange) {
+	if (!isBlogLoaded) {
 		fetchJSON('blog/blog.json').then((b) => {
 			for (let post of b) {
 				post.longtext = b64u(post.longtext)
@@ -963,12 +966,12 @@ ${post.desc}
 <div class="mdl-card__actions mdl-card--border">${post.longtext}</div>
 </div>
 </div>`
-				blogposts[post.id] = post
+				blogPosts[post.id] = post
 			}
 		})
 	}
-	showCustomTab('blog', 3, hchange === false ? false : undefined)
-	isblogloaded = true
+	showCustomTab('blog', 3, hashChange === false ? false : undefined)
+	isBlogLoaded = true
 }
 
 function showMirrors() {
@@ -987,7 +990,7 @@ function showCustomTab(menuItem, id, norelocate) {
 	}
 }
 
-function clk(arg, id) {
+function click(arg, id) {
 	autoClose()
 	menuA[id](arg, id)
 }
@@ -1053,26 +1056,26 @@ setTimeout(() => {
 	let u = 0
 	for (let folder in locale.folders) {
 		if (u < 3) {
-			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#jcontent', `javascript:clk('${folder}',0)`, 'me-' + folder)
+			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#jcontent', `javascript:click('${folder}',0)`, 'me-' + folder)
 		} else {
-			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#scontent', `javascript:clk('${folder}',0)`, 'me-' + folder)
+			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#scontent', `javascript:click('${folder}',0)`, 'me-' + folder)
 		}
 		u++
 	}
 	
-	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">star</i>' + locale.favs, '.mdl-layout__drawer .mdl-navigation', `javascript:clk('favourites',5);`, 'me-favourites')
-	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">settings</i>' + locale.about, '.mdl-layout__drawer .mdl-navigation', `javascript:clk('about',1);`, 'me-about')
-	//addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">star</i>' + locale.favs, '.mdl-layout__drawer .mdl-navigation', `javascript:click('favourites',5);`, 'me-favourites')
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">settings</i>' + locale.about, '.mdl-layout__drawer .mdl-navigation', `javascript:click('about',1);`, 'me-about')
+	//addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:click('stats',2)`,'me-stats');
 	if (locale.l == 'ru') {
-		addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">book</i>Блог', '.mdl-layout__drawer .mdl-navigation', `javascript:clk('blog',3)`, 'me-blog')
-		addItem( 'a', 'mdl-navigation__link', '<i class="material-icons mic">mode_comment</i>' + locale.comments, '.mdl-layout__drawer .mdl-navigation', 'javascript:clk(0,4)', 'me-comments')
+		addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">book</i>Блог', '.mdl-layout__drawer .mdl-navigation', `javascript:click('blog',3)`, 'me-blog')
+		addItem( 'a', 'mdl-navigation__link', '<i class="material-icons mic">mode_comment</i>' + locale.comments, '.mdl-layout__drawer .mdl-navigation', 'javascript:click(0,4)', 'me-comments')
 	}
 	
-	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">clear_all</i>' + locale.mirrors, '.mdl-layout__drawer .mdl-navigation', 'javascript:clk(0,6)', 'me-mirrors')
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">clear_all</i>' + locale.mirrors, '.mdl-layout__drawer .mdl-navigation', 'javascript:click(0,6)', 'me-mirrors')
 	initSwipes()
 	setTimeout(() => {
 		getmdlSelect.init('.getmdl-select')
-		$$('.mdl-menu__item')[prmode || 1].click()
+		$$('.mdl-menu__item')[pageRenderingMode || 1].click()
 	}, 400)
 	
 	if (localStorage['rg-intro'] || navigator.userAgent.match('bot') || window.location.hash.match('blog')) {
@@ -1100,4 +1103,4 @@ function switchLang() {
 	window.location.reload()
 }
 
-var menuA = [selectSection, openTheBox, showCustomTab, showBlogPosts, showComments, showFvs, showMirrors]
+var menuA = [selectSection, openTheBox, showCustomTab, showBlogPosts, showComments, showFavourites, showMirrors]

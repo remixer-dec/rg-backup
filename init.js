@@ -1,15 +1,13 @@
-let tabhtml = ''
-let panelhtml = ''
-let tthtml = ''
-let isblogloaded = false
-let blogposts = []
+let tabHTML = panelHTML = tooltipHTML = ''
+let isBlogLoaded = false
+let blogPosts = []
 
 function addTab(type, id, name, hidden) {
     hidden = hidden ? ' hidden' : ''
     let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${type}_${id}" href="#${type}_${id}"> ${name} </a>`
     let panel = `<section class="mdl-layout__tab-panel" id="${type}_${id}"><ul class="page-content mdl-list"></ul></section>`
-    panelhtml += panel + '\n'
-    tabhtml += tab + '\n'
+    panelHTML += panel + '\n'
+    tabHTML += tab + '\n'
 }
 
 function addTopTabs(type, hidden) {
@@ -29,14 +27,14 @@ function addTabs() {
     addTab('t', '-3', 'blog', true)
     addTab('t', '-4', 'favourites', true)
     addTab('t', '-5', 'mirrors', true)
-    return tabhtml
+    return tabHTML
 }
 
 function addTooltips() {
-    for (tt in locale.tooltips) {
-        tthtml += `<div class="mdl-tooltip" data-mdl-for="${tt}">${locale.tooltips[tt]}</div>`
+    for (let tt in locale.tooltips) {
+        tooltipHTML += `<div class="mdl-tooltip" data-mdl-for="${tt}">${locale.tooltips[tt]}</div>`
     }
-    return tthtml
+    return tooltipHTML
 }
 
 function relocate(hash) {
@@ -60,7 +58,7 @@ function parseHash(url) {
     }
     if (blog) {
         cf = cf != 'custom' ? 'custom' : cf
-        if (!isblogloaded) {
+        if (!isBlogLoaded) {
             showBlogPosts(false)
             $('#spinner').classList.add('hidden')
         }
@@ -123,15 +121,15 @@ function initialize() {
         return addElement(script)
     }
     function loadStyle(src) {
-        let st = document.createElement('link')
-        st.rel = 'stylesheet'
-        st.href = src
-        return addElement(st)
+        let style = document.createElement('link')
+        style.rel = 'stylesheet'
+        style.href = src
+        return addElement(style)
     }
     document.getElementsByTagName('html')[0].lang = locale.l
     window.alltabs.innerHTML += addTabs()
     window.tooltips.innerHTML += addTooltips()
-    window.lists.innerHTML += panelhtml
+    window.lists.innerHTML += panelHTML
     window.addEventListener('hashchange', hashHandler)
     loadScript('lib/material.min.js').then(() => {
         let items = [loadStyle('lib/material.light_green-blue.min.css'), loadStyle('style.min.css')]
@@ -145,8 +143,8 @@ function initialize() {
     })
 }
 
-function loadConfig(lsname, dvalue) {
-    let c = localStorage[lsname] || dvalue
+function loadConfig(localStorageName, defaultValue) {
+    let c = localStorage[localStorageName] || defaultValue
     return c == 'true'
 }
 
