@@ -23,34 +23,36 @@ self.addEventListener('install', (event) => {
         './icon.png'])
   }))
 })
+
 caches.keys().then((ckeys) => {
     ckeys.filter(x => x == 'rg-main-v5').map(x => caches['delete'](x).then(r => self.skipWaiting()))
 })
-self.addEventListener('activate',(event)=>{
-	event.waitUntil(caches.keys().then((cacheNs)=>{
-		return Promise.all(cacheNs.filter((cacheN)=>{
+
+self.addEventListener('activate', (event) => {
+	event.waitUntil(caches.keys().then((cacheNs) => {
+		return Promise.all(cacheNs.filter((cacheN) => {
 			return !allCaches.includes(cacheN)
-		}).map((cN)=>{
+		}).map((cN) => {
 			return caches['delete'](cN)
 		}))
 	}))
 })
 
-self.addEventListener('fetch', (event)=>{
+self.addEventListener('fetch', (event) => {
     let u = event.request.url
     if(u.match('out.php')){
         let red = u.match(/\&(http:\/\/.+$)/im)[1]
-        event.respondWith(Response.redirect(red,302))
+        event.respondWith(Response.redirect(red, 302))
     } else{
-        event.respondWith(caches.match(event.request).then((response)=>{
+        event.respondWith(caches.match(event.request).then((response) => {
           return response || fetch(event.request)
-          .then(r=>{return r.status===404?(new Response('404 :(',{status:404})):r})
-          .catch(e=>{return new Response('{"error": "connection lost"}')})
-        }));
+          .then(r => r.status === 404 ? (new Response('404 :(', {status: 404})) : r)
+          .catch(e => new Response('{"error": "connection lost"}'))
+        }))
     }
-});
+})
 
-self.addEventListener('message',(event)=>{
+self.addEventListener('message', (event) => {
   if (event.data.action === 'refresh') {
     self.skipWaiting()
   }

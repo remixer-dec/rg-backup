@@ -1,823 +1,955 @@
-if(check()){ //es6
-    //hide splashscreen after loading
-    setTimeout(()=>{window.splash.classList.add('spf')},500)
-    setTimeout(()=>window.splash.remove(),21000)
-    componentHandler.upgradeDom()
-    //fix the mdl layout and declare configuration
-    const MAX_ITEMS_P = 20
-    var screenshots = loadConfig('rg-screenshots',true)
-    var icons = loadConfig('rg-icons',false)
-    var alphasort = loadConfig('rg-alphasort',false)
-    var prmode = localStorage['rg-performance'] || false
-    var archiveHelper = loadConfig('rg-archelper', false)
-    prmode = parseInt(prmode);
-    prmode = prmode == NaN ? 1 : prmode;
-    var favs = JSON.parse(localStorage['rg-fav'] || '{}');
-    var cf = '' //current folder
-    var loaded = [];
-    var lastInput = 0;
-    var lastTarget = false;
-    var tt,ttt;//timers to optimize loading
-    const appDB = [];
-    const folders = Object.keys(locale.folders);
-    var $ = (q) => document.querySelector(q);
-    $$ = typeof $$ != 'function'? q => document.querySelectorAll(q):$$
-    function fetchJSON(filename){
-        return new Promise((rs,rj)=>{
-            fetch(filename).then((f)=>{
-                f.json().then((j)=>{
-                    rs(j);
-                }).catch(e=>rj());
-            });
-        });
-    }
-    function b64u(str) { //base64 unicode
-        return decodeURIComponent(atob(str).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-    }
+//es6
+if (!check()) throw new EvalError("unsupported browser") 
+//hide splashscreen after loading
+setTimeout(() => {
+	window.splash.classList.add('spf')
+}, 500)
+setTimeout(() => window.splash.remove(), 21000)
+componentHandler.upgradeDom()
 
-    function getCfID(n){
-        let scf = cf;
-        if(typeof n == "string"){
-            scf = n;
-            n = undefined;
-        }
-        let x = folders.indexOf(scf)
-        return typeof n !== "undefined"?folders[n]:x;
-    }
+//fix the mdl layout and declare configuration
+const MAX_ITEMS_P = 20
+var screenshots = loadConfig('rg-screenshots', true)
+var icons = loadConfig('rg-icons', false)
+var alphasort = loadConfig('rg-alphasort', false)
+var prmode = localStorage['rg-performance'] || false
+var archiveHelper = loadConfig('rg-archelper', false)
+prmode = parseInt(prmode)
+prmode = prmode == NaN ? 1 : prmode
+var favs = JSON.parse(localStorage['rg-fav'] || '{}')
+var cf = '' //current folder
+var loaded = []
+var lastInput = 0
+var lastTarget = false
+var tt, ttt //timers to optimize loading
+const appDB = []
+const folders = Object.keys(locale.folders)
+var $ = (q) => document.querySelector(q)
+$$ = typeof $$ != 'function' ? (q) => document.querySelectorAll(q) : $$
+var itx = (() => ('innerText' in document.body ? 'innerText' : 'innerHTML'))()
+let vkinit = false
 
-    function addItem(type,xclass,text,to,href,id){
-        var item = document.createElement(type);
-        item.innerHTML = text;
-        item.className = xclass;
-        if(href){
-            item.href = href;
-        }
-        if(id){
-            item.id = id;
-        }
-        componentHandler.upgradeElement(item);
-        $(to).appendChild(item);
-    }
-    function loadScreenshots(folder){
-        autoloader();
-        if(screenshots){
-            fetchJSON(cf+'/data/screenshots.json').then((sc)=> {
-                window['scr_'+folder] = sc;
-                loaded[folder].confirm()
-                loaded[folder].confirmed = 1
-            });
-        }
-    }
-    function switchTabs(hide,show){
-        $$(`.${hide}-tab`).forEach(e=>e.classList.add('hidden'));
-        $$(`.${show}-tab`).forEach(e=>e.classList.remove('hidden'));
-    }
-    function switchSelectedMenuItem(item){
-        let oldm = $('.mds')
-        if(oldm){
-            oldm.classList.remove('mds')
-        }
-        let newm = $('#me-'+item)
-        if(newm){
-            newm.classList.add('mds')
-        }
-    }
-    function loadCoreData(folder){
-        tt = ttt = 0;
-        if(icons){
-            fetchJSON(cf+'/data/icons.json').then(ic=>{
-                loadScreenshots(folder)
-                window['icons_'+folder] = ic;
-                setTimeout(loadAppList,tt,ic);
-                setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-            });
-        } else{
-            loadScreenshots(folder)
-            setTimeout(loadAppList,tt,[]);
-            setTimeout(()=>{$('.'+folder+'-tab').click()},tt);
-        }
-    }
-    function selectSection(folder){
-        if(cf==folder){return}
-        switchSelectedMenuItem(folder)
-        switchTabs(cf,folder)
-        cf = folder;
-        if(!document.location.hash.match(cf)){
-            relocate('#/'+folder+'/')
-        }
-        if(!(folder in loaded)){ //load only once
-            $('#spinner').classList.remove('hidden');
-            loaded[folder] = {confirmed:0}
-            loaded[folder].all = new Promise((res,rej)=>{loaded[folder].confirm = res})
-            if(window.location.hash.length > 1){
-                setTimeout(locate,1,window.location.href)
-            }
-                loadCoreData(folder);
-        } else {
-            $('.'+cf+'-tab').click();
-        }
-    }
-    function autoSelectSection(){
-        cscreenshots.checked == screenshots? 1 : cscreenshots.parentElement.click()
-        cicons.checked == icons? 1 : cicons.parentElement.click()
-        cazsort.checked == alphasort? 1 : cazsort.parentElement.click()
-        carchelper.checked = archiveHelper? carchelper.parentElement.click() : 0
-        if(window.location.hash.length>1){
-            let h = parseHash(window.location.hash)[0]||'apps'
-            if(h!='custom'){
-                selectSection(h)
-            }
-        }else{
-            selectSection('apps');
-        }
-    }
-    function alphasorter(a,b){
-        if(a[1].toLowerCase() < b[1].toLowerCase()) return -1
-        if(a[1].toLowerCase() > b[1].toLowerCase()) return 1
-        return 0;
-    }
-    function pageRenderer(p,a){
-        p = parseInt(p);
-        p=p-1;
-        let elems = $$('.mdl-layout__tab-panel.is-active >ul > div');
-        let activeElem = $('.mdl-layout__tab-panel.is-active .pactive');
-        if(!activeElem) return;
-        if(activeElem.classList.contains('loadmore')){
-            activeElem.classList.add('hidden');
-            return false;
-        }
-        if(!a){
-            activeElem.classList.add('hidden');
-            var target = elems[p]
-        } else{
-            var target = activeElem.nextElementSibling;
-        }
-        if(!target) return;
-        if(target == lastTarget) return;
-        window.lastTarget = target;
-        activeElem.classList.remove('pactive');
-        target.classList.add('pactive');
-        target.classList.remove('hidden');
-    }
-    function loadAppList(ic){
-        let cats = locale.tabs[cf].map(e=>{return {id:e[0],name:e[1]}});
-        cats.push({id:0,name:locale.top});
-        fetchJSON(cf+'/data/v2data.json').then((al)=>{
-            if(alphasort){
-                for(let pr in al){
-                    if(pr==0){continue}
-                    al[pr].sort(alphasorter)
-                }
-            }
-            let all = []
-            for(let cat of cats){
-            let list = '<div class="pactive">';
-            let ii = 0;
-            for(var app of al[cat.id]){
-                let icon = ic['i'+app[0]];
-                if(icon){
-                    icon = 'data:image/png;base64,'+icon;
-                } else {
-                    icon = '10.png'
-                    if(cf=='sapps'||cf=='sgames'){
-                        icon = '11.png'
-                    }
-                }
-                let ricon = 'info'
-                let aclass = 'mi hidden';
-                if(app.length==3){
-                    if(app[2]==1){
-                        ricon = 'flag'
-                    }
-                }
-                let appitem = `
-                <li class="mdl-list__item" onclick="relocate('#/${cf}/${app[0]}')">
-                  <span class="mdl-list__item-primary-content">
-                  <img class="mdl-list__item-icon appic" data-src="${icon}">
-                  <span class="mdl-list__item-text-body">${app[1]}</span>
-                  </span>
-                  <span class="mdl-list__item-secondary-content">
-                    <a class="mdl-list__item-secondary-action" href="#/${cf}/${app[0]}"><i class="mi hidden">${ricon}</i></a>
-                  </span>
-                </li>
-                `;
-                list += appitem
-                ii++
-                if(ii%MAX_ITEMS_P==0){
-                    list+="</div><div"+(prmode>0?' class="hidden"':'')+">"
-                }
-                if(cat.id!=0){
-                    if(app.length==3){
-                        app.splice(2,1);
-                    }
-                    appDB.push(app.concat([cf,cat.name]));
-                    all.push([appitem,app[1]])
-                }
-            }
-            let apppages=Math.ceil(al[cat.id].length/MAX_ITEMS_P);
-            if(prmode==2&&apppages>1){
-                list+='</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>'
-            }
-            if(prmode==1&&apppages>1){
-                list+='</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>';
-            }
-            if(cat.id=="0"){cat.id="top"}
-            setTimeout(insertAppList,ttt,$(`#${cf}_${cat.id}`).firstChild,list);
-            ttt+=20;
-            if(cats[cats.length-1].id==cat.id){
-                all = alphasort?all.sort(alphasorter):all;
-                let apppages = Math.ceil(all.length/MAX_ITEMS_P);
-                all = all.map((a,b)=>b==0?'<div class="pactive">'+a[0]:b%MAX_ITEMS_P==0?"</div><div"+(prmode>0?' class="hidden"':'')+">"+a[0]:a[0]).join('')+(prmode==2?'</div><div class="paginator" id="page'+cf+cat.id+'"><img src="10.png" onload="new Pagination(this.parentElement,\'page'+cf+cat.id+'\',{totalPage:'+apppages+',range:'+(apppages>3?5:apppages)+',callback:pageRenderer})"></div>':(prmode==1?'<div class="loadmore mdl-button" onclick="pageRenderer(1,1)">'+locale.loadmore+'</div>':''));
-                //TODO: remake ^this thing
-                setTimeout(insertAppList,10,$(`#${cf}_all`).firstChild,all);
-                ttt+=50;
-                setTimeout(()=>{
-                    $$('.mi.hidden').forEach((k,v)=>{k.className = 'material-icons'})
-                    $$('.appic').forEach((k,v)=>{if(k.src==''){k.src = k.getAttribute('data-src')}})
-                },ttt)
-                ttt+=850
-                setTimeout(()=>{
-                    $('#spinner').classList.add('hidden')
-                    all = undefined
-                    $('#me-'+cf).innerHTML +='<i class="material-icons rc">check</i>'
-                    componentHandler.upgradeDom()
-                },ttt);
-            }
-        }});
-    }
-    function insertAppList(el,list,add){
-        el.innerHTML = add?el.innerHTML+list:list;
-        //TODO: add experimental iscroll support here
-    }
-    function autoloader(e){
-        if(prmode==1){
-            Array.from(lists.children).forEach((e)=>e.addEventListener('scroll',(ev)=>{
-                if(e.offsetHeight + e.scrollTop > e.scrollHeight - 60){
-                    pageRenderer(0,true)
-                }
-            }, supportsPassive ? {passive: !0} : !1))
-        }
-    }
-    function optsearch(){
-        lastInput = new Date().getTime()
-        fastsearch();
-    }
-    function fastsearch(){
-        if(lastInput){
-            if(new Date().getTime() - lastInput > 700){
-                lastInput = false;
-            } else {
-                return setTimeout(fastsearch,720);
-            }
-        } else {
-            return;
-        }
-        var text = $('#fixed-header-drawer-exp').value;
-        if(prmode == 0 && text !='' && text[0]=='!'){
-            text = text.slice(1)
-            let t = new RegExp(text,'im');
-            if(text.length>0){
-                if(text.length<2) return;
-                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                    e.classList.add('hidden')
-                });
-                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                    if(e.children[0].children[1].innerHTML.match(t)){
-                        setTimeout((e)=>e.classList.remove('hidden'),0,e);
-                    }
-                });
-            } else{
-                $$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e)=>{
-                    e.classList.remove('hidden')
-                });
-            }
-        } else{
-            if(text.length>2){
-                let t = new RegExp(text,'im');
-                let cc = cf
-                let results = appDB.filter(e=>e[1].match(t))
-                let total = results.length
-                results = results.splice(0,30).sort(alphasorter).sort((a,b)=>{
-                    if(a[2]==cc){
-                        return -9
-                    } else return 9;
-                }).splice(0,10);
-                if(results.length==0){
-                    searchresults.innerHTML = `<a>${locale.notfound}</a>`;
-                    return
-                }
-                results.push
-                searchresults.innerHTML=results.map(r=>`<a href='#/${r[2]}/${r[0]}'>${r[1]}<br>`).join('')+(total>10?`<a id="totalr">${locale.found} ${total}</a>`:'');
-            } else{
-                searchresults.innerHTML = '';
-            }
-        }
-    }
-    function getMLink(event, e, filename){
-        const filters = []
-        filters['apps'] = ['1.1','BEST_GAMES_17_LITE','E1000_mega_konon','GhostSensor_K500',
-        'ICQMobile','LIKE_PC_GAME_4_FULL','MOBGAMES_5','MoM4lite','NUMISMAT_40','qipmobile_sie_a',
-        'rugame_mobi_mir_strategii_6','rugame_mobi_Vista','SlovoEd_Deluxe_Eng','the_best_novosti11','vvs_notepadRu']
-        filters['games'] = ["!P","3DMiniGolfWor_n95_bykriker","160.jar","240x320_se_k770_k800_s500_t650_w850_rus_paris","365Bowling_s5230","996280","AlienQuarantine_SAMSUNG_GT_S5230_EN","apo_se_aino_en","Atudela_240","BeachBallCrabMayhem_w","BMW_Racing_nokia_62","bubble_pop","CallofDuty3_n623","CBS240x320lg","Collapse_2010_SE_Satio","Circket 2016 24","daughter2_ru_nokia_240x320_s60","Dirty_D5","DragonMania_LG_KU","EarthwormJim_ru_s60","everybodys_golf_nokia_n95","FerrariGT3_Nokia_N73","formularacingpro_nokia_240x320_s60",
-        "GangstarCity_Samsung_GT_S8","GM_PowerPuffGirlsSnowboarding_Nokia_176x208","guitar_hero3_sp1_N7","holes_RU_Nok_360","iec_tophacker_f","JellyStar_SE_176","Kapsle_PL__Breakpoint_2009__k5","Legends_Of_Lore_Eposide1","loveriddle","MegaBloks_Builder_se_k6","Mind_Habits_nok",
-        "Moto Racing 3D v1.2_3","navy_warK800","Nokia_Racing","OregonTrailAmericanSettler_Nokia_58","Phone_","PocketGod_Samsung_S5","Puzzle_Pets","RealB","RN80","rugame_mobi_valentine_journey_81","SantaInTrouble240","shaolin_en_fr_it_de_es_pt_d5","smes","SpaceInv_s60","STD_CakeMania4_SEU","Super_golf",
-        "TempleRush3D2_240x4","TheBigLebowskiBowling_s60_32","tmp_10180","tmp_19623-2012r","Tomb_Raider_Underworld_3D","TRU240s6","uno2_nokia_e71","warriors_z","wpt-showdown.N95","zombiemobdefense","zumasrevenge_k"]
-        filters['cgames'] = ["0A","240x320a","AYSJ","ChanKuo3_N3","d608","DPCQ2N73","E2.123","e2.313","e2.496","E2.666","E6.114","e6.302","e62.169","e62.306","E62.459","e62.661","E62.789","e62.957","fcjdE2","guardianlegend_s4","guangjinN5","jxihab_n","k700.239","k700.583","K790.145","K790.298","K790.463","K790.605","L6.2","LOK","MHQ","Myz",
-        "N73.215","n73.339","n73.472","n73.615","N73.787","n73.1007","n73.1208","n73.1332","n73.1470","N73.1633","n73.1817","n73_bt.20","n97.110","n97.225","n97.356","n97.484","n97.613","N5500.90","N5800.42","N5800.168","N5800.283","N7370.1","n7370.204","N7370.399","n7370.642",
-        "N7370.799","N7370.979","N7610.109","n7610.380","N6710.695","N7610.943","N7610.1132","NHDiaoyueMuzhu_v1.0.0_D6","PES2011_N76","s40n7370.1","se_k700","SJQYE2","Sword_H","TJSXC_no","V8.17","WLQJN7610","XLQYK","ylsgsN","ZSSFN73","ZZTKW"]
-        filters['sapps'] = ['0']
-        filters['sgames'] = ['0']
-        let currentFilter=filters[cf]
-        let magicNumber = 0;
-        filename = filename.toLowerCase()
-        function advancedCompare(w1,w2){
-            for(let i=0,l=w2.length;i<l;i++){
-                if(w1[i]){
-                    if(w1[i] != w2[i]){
-                        if(isNaN(parseInt(w1[i]))&&isNaN(parseInt(w2[i]))){
-                            return w1[i]>w2[i]
-                        } else {
-                            if(!isNaN(parseInt(w1[i]))&&!isNaN(parseInt(w2[i]))){
-                                return parseInt(w1.slice(i)) > parseInt(w2.slice(i))
-                            } else{
-                                let who = !isNaN(parseInt(w1[i]))
-                                if(i>0){
-                                    return who && !isNaN(parseInt(w1[i-1]))
-                                } else {
-                                    return w1[0] > w2[0]
-                                }
-                            }
-                        }
-                    }
-                } else{
-                    return false
-                }
-            }
-        }
-        if(filename<'0'||filename[0]=='_'||(!filename.endsWith('.jar')&&cf[0]!='s')||filename<filters[0]){
-            if(cf!='games'){
-                magicNumber = currentFilter.length;
-            } else {
-                magicNumber = 1;
-            }
-        } else{
-            if(cf == 'games' && filename > 'zumarevenge_LG'){
-                    magicNumber = 1;
-            }
-            else{
-                let i = 0;
-                for(let fn of currentFilter){
-                    fn = fn.toLowerCase()
-                    if(filename.startsWith(fn)){
-                    	event.preventDefault()
-                        return alert(cf[0]=='s'?(locale.arc0 + filename + ')'):(locale.arc0 + filename + locale.arc1+i+', '+(i+1)))
-                    }
-                    if(advancedCompare(filename,fn)){
-                        i++;
-                        magicNumber = i;
-                    } else{
-                        break;
-                    }
-                }
-            }
-        }
-        event.preventDefault()
-        if(cf[0]!='s'){
-            alert(locale.arc0 + filename + locale.arc2+magicNumber)
-        } else{
-            alert(locale.arc0 + filename + ')');
-        }
-    }
-    function favourite(onlycheck){
-        function check(x){return x in favs}
-        let appinfo = fvicon.name.split("|")
-        let xid = parseInt(appinfo[0])
-        let core = 'a'+appinfo[1]+'_'+xid.toString(32);
-        if (onlycheck){
-            return check(core);
-        }
-        if(check(core)){
-            delete favs[core];
-            fvicon.innerHTML='star_border'
-        } else{
-            favs[core]=appinfo[2];
-            fvicon.innerHTML='star'
-        }
-        localStorage['rg-fav'] = JSON.stringify(favs);
-        if($('.mds').id=='me-favourites'){
-            showFvs()
-        }
-    }
-    function getAppInfo(appid,folder){
-        if(!folder){
-            folder = cf;
-        }
-        if(cf=='custom'){
-            cf = folder
-            setTimeout(()=>cf = 'custom',600)
-        }
-        fetchJSON(folder+'/data/all/'+appid+'.json').then((a)=>{
-            a.id = appid;
-            let icons = window['icons_'+folder]||[];
-            $('#appIcon').src=icons['i'+a.id]?'data:image/png;base64,'+icons['i'+a.id]:(cf[0]=='s'?'11.png':'10.png');
-            document.title = a['name']+' - RuGame Unofficial Archive';
-            fvicon.name = appid+'|'+getCfID()+'|'+a.name;
-            fvicon.innerHTML = favourite(1)?'star':'star_border';
-            setField(a,'name','appTitle');
-            setField(a,'vie','appViews');
-            setField(a,'dwn','appDls');
-            setField(a,'cmm','appComments');
-            setField(a,'rating','appRating','rtg');
-            let appURL = 'http://rugame.mobi/'+(cf=='cgames'?'china/':'game/')+a.id;
-            $('#appSRC').href = appURL;
-            $('#appWA').href = 'https://web.archive.org/web/'+appURL;
-            $('#appGGL').href = 'http://webcache.googleusercontent.com/search?q='+appURL;
-            $('#appYND').href = 'https://yandex.com/search/?text=site:'+appURL;
-            $('#appBNG').href = 'https://bing.com/search?q=site:'+appURL;
-            $('#appYAH').href = 'https://search.yahoo.com/search?p=site:'+appURL;
-            if('rating' in a){
-                let rtg = a.rating.rtg.split("/");
-                p1.MaterialProgress.setProgress(rtg[0]*100/(parseInt(rtg[0])+parseInt(rtg[1])));
-            }
-            ('s3D' in a && a['s3D'])?$('#s3D').classList.remove('hidden'):$('#s3D').classList.add('hidden');
-            ('bt' in a && a['bt'])?$('#sBT').classList.remove('hidden'):$('#sBT').classList.add('hidden')
-            setDesc(a);
-            setField(a,'upl','appBy');
-            setField(a,'vnd','appVendor');
-            setField(a,'cat','appCat');
-            setField(a,'add','appDate');
-            if('upd' in a){
-                setField(a,'upd','appUpdate');
-            } else {
-                setField(a,'add','appUpdate');
-            }
-            var dlc = '';
-            var i = 0;
-            if('files' in a){
-            for(let f of a.files){
-                let t = new Date().getTime()+a.id
-                dlc+=f.text+'<div class="mdl-grid">';
-                for(let l of f.links){
-                    l.type = l.file.match(/(?!\.)[a-z]+$/im);
-                    l.type = l.type?l.type[0].toUpperCase():'???'
-                    i++;
-                    let size;
-                    if(f.size){
-                        size = l.type == 'JAD'?'1Кб':f.size+'Кб'
-                    } else {
-                        size = '';
-                    }
-                    let link = localStorage['lmirror']?localStorage['lmirror']+folder+'/'+l.file:'javascript:alert(\''+locale.nomirror+'\')';
-                    if(l.type=='???'){
-                        link = `javascript:alert('${locale.notfound}')`
-                    }
-                    let onclick = ''
-                    let target = '_blank'
-                    if(link.match('ipt:')){
-                        target = '';
-                    }
-                    if(link.match('file:')){
-                        onclick=`prompt('ссылка на локльный файл','${link}');`
-                        link = `#dls`
-                        target = '';
-                    }
-                    let extraclass = ''
-                    if (l.not_renamed) {
-                    	extraclass = ' red'
-                    }
-                    dlc+=`
-                    <a href="${link}" rel="noreferrer" target="${target}" class="mdl-cell mdl-cell--5-col ai${extraclass}" id="x${t+'_'+i}" onclick="${onclick}">
-                    <i class="material-icons">file_download</i>${l.type}
-                    </a>
-                    <div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t+'_'+i}">${l.file}<br>${size}</div>
-                    `;
-                    if(archiveHelper && l.type != 'JAD' && l.file != ''){
-                        dlc+=`<a href="#mega" onclick="getMLink(event, this,'${l.file}')" class="mdl-cell mdl-cell--5-col ai">
-                        <i class="material-icons">archive</i>ArchiveHelper
-                        </a>`
-                    }
-                }
-                dlc+='</div>'
-            }
-            }
-            $('#dls').innerHTML=dlc;
-            setTimeout(componentHandler.upgradeDom, 150);
-            openTheBox('thebox');
-        }).catch((reason)=>{
-            alert(locale.nodata)
-        })
-    } 
-    function setRelated(app) {
-    	if (!app.related || (app.related && app.related.length == 0)) {
-    		$('#related').innerHTML = ''
-    		return
-    	}
-    	
-    	let html = `<p><b>${locale.related}</b></p>`
-    	for (let item of app.related) {
-    		html += `<div class="mdl-list__item"><a href="#/${cf}/${item}">${appDB.find(x=>x[0] == item)[1] }</a></div>`
-    	}
-    	html += "<hr/>"
-    	$('#related').innerHTML = html
-    } 
-    function setDesc(o){
-        let sc = '';
-        if('desc' in o){
-            let desc = b64u(o['desc']).replace(/\/smile\//g,'https://web.archive.org/web/0if_/http://rugame.mobi/smile/');
-            if(!(cf in loaded)){
-                $('#appDesc').innerHTML = desc;
-            }else{
-                if(!loaded[cf].confirmed){
-                    $('#appDesc').innerHTML = desc;
-                }
-                loaded[cf].all.then((s)=>{
-                    if(screenshots&&('i'+o.id in window['scr_'+cf])){
-                        sc += `<br><center><img src="data:image/png;base64,${window['scr_'+cf]['i'+o.id]}"></center><br>`;
-                    }
-                    $('#appDesc').innerHTML = sc+desc
-                    try {setRelated(o)} catch(e) {console.error(e)}
-                })
-            }
-        }
-    }
-    var itx = (()=>'innerText' in document.body ? 'innerText' : 'innerHTML')()
-    function setField(obj,prp,fld,sp) {
-        let f = $('#'+fld)
-        let p = itx
-        if(prp in obj){
-            if(sp && sp in obj[prp]){
-                f[p] = obj[prp][sp];
-            } else{
-                f[p] = obj[prp];
-            }
-        } else{
-            f[p] = '?';
-        }
-    }
-    function closeTheBox(b){
-        $('#infobox').classList.add('hidden');
-        $$('.box').forEach((h)=>{h.classList.add('hidden')})
-        if(!b){
-            window.location.hash="#"
-        }
-        document.title = 'RuGame Archive'
-    }
-    function openTheBox(id){
-        $('#'+id).classList.remove('hidden');
-        $('#infobox').classList.remove('hidden');
-        $('#lybox').scroll(0,0);
-    }
-    let vkinit = false
-    function showFvs(){
-        let fvhtml = '';
-        for(fv in favs){
-            let fx = fv.substr(1);
-            let f = fx.split('_')
-            let id = parseInt(f[1],32);
-            f = getCfID(parseInt(f[0]))
-            let n = favs[fv];
-            fvhtml+= `
-            <li class="mdl-list__item" onclick="relocate('#/${f}/${id}')">
-            <span class="mdl-list__item-primary-content">
-                  <span class="mdl-list__item-text-body">${n}</span>
-            </span>
-            <span class="mdl-list__item-secondary-content">
-                <a class="mdl-list__item-secondary-action" href="#/${f}/${id}"><i class="material-icons">star</i></a>
-            </span></li>`
-        }
-        document.querySelector('#t_-4').innerHTML = fvhtml;
-        showCustomTab('favourites',4)
-    }
-    function showComments(){
-        showCustomTab('comments',1)
-        if(!vkinit&&VK){
-            VK.init({apiId: 0x4F9438, onlyWidgets: true});
-            VK.Widgets.Comments("t_-1", {limit: 20, width: "auto", attach: false});
-            $("#t_-1").innerHTML+='<a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a>'
-            vkinit = true;
-        }
-    }
-    function autoClose(){
-        if (drawerON()){
-            ly.MaterialLayout.toggleDrawer()
-        }
-    }
-    function drawerON(){
-        return ly.MaterialLayout.drawer_.classList.contains('is-visible')
-    }
-    function initSwipes(a){
-        // navbar swipe opener
-        let n = {
-            open: false,
-            startloc: [],
-            complete: false,
-            iterator: 0,
-            width: 240,
-            pos: 0,
-            element: $('.mdl-layout__drawer'),
-            bg: $('.mdl-layout__obfuscator')
-        }
+function fetchJSON(filename) {
+	return new Promise((rs, rj) => {
+		fetch(filename).then((f) => {
+			f.json()
+				.then((j) => {
+					rs(j)
+				})
+				.catch((e) => rj())
+		})
+	})
+}
 
-        window.addEventListener('touchstart', function(e) {
-            n.startloc = [e.touches[0].clientX, e.touches[0].clientY]
-            n.complete = false
-            n.open = $('.mdl-layout__drawer').classList.contains('is-visible')
-            n.iterator = 0
-            n.pos = 0
-            n.allowed = $('#infobox').classList.contains('hidden')
-        }, supportsPassive ? {passive: !0} : !1)
+function b64u(str) {
+	//base64 unicode
+	return decodeURIComponent(
+		atob(str)
+			.split('')
+			.map(function (c) {
+				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+			})
+			.join('')
+	)
+}
 
-        window.addEventListener('touchmove', function(e) {
-            if ((!n.open && n.startloc[0] > 60) || (n.open && n.startloc[0] > 250) || !n.allowed) return
-            n.iterator++
-            //detect horizontal swipe
-            let loc = [e.touches[0].clientX, e.touches[0].clientY]
-            if (n.iterator > 4 && !n.complete) {
-                let diff = [loc[0] - n.startloc[0], loc[1] - n.startloc[1]]
-                if(Math.abs(diff[0]) > Math.abs(diff[1])) {
-                    n.complete = true
-                    n.element.style.transition = 'none'
-                    n.bg.style.transition = 'none'
-                }
-            }
-            if (n.complete) {
-                n.pos = n.width - loc[0]
-                if (n.startloc[0] > 20 && !n.open) {
-                    n.pos += n.startloc[0]
-                }
-                if (n.startloc[0] < 200 && n.open) {
-                    n.pos -= n.width - n.startloc[0]
-                }
-                n.pos = n.pos < 0 ? 0 : n.pos
-                n.element.style.transform = `translate(-${n.pos}px)`
-                n.bg.style.opacity = 1 - n.pos / 250
-            }
-        }, supportsPassive ? {passive: !0} : !1)
-        window.addEventListener('touchend', function() {
-            if (n.complete) {
-                n.element.style.transition = '.4s all'
-                n.bg.style.transition = '.4s all'
-                n.element.style.transform = ''
-                n.bg.style.opacity = ''
-                if (n.pos < 135) {
-                    n.element.classList.add('is-visible')
-                    n.bg.classList.add('is-visible')
-                } else {
-                    n.element.classList.remove('is-visible')
-                    n.bg.classList.remove('is-visible')
-                }
-            }
-        }, supportsPassive ? {passive: !0} : !1)
+function getCfID(n) {
+	let scf = cf
+	if (typeof n == 'string') {
+		scf = n
+		n = undefined
+	}
+	let x = folders.indexOf(scf)
+	return typeof n !== 'undefined' ? folders[n] : x
+}
 
-        //tab swipe switcher
-        let Tool = {
-            translateX: function(t, e, n) {
-               t.style.display = "block",
-               t.style.transition = n ? "transform 0.2s" : "",
-               t.style.transform = "translate3d(" + e + "px, 0, 0)"
-           },
-           prevElement: function(t) {
-               return t.previousElementSibling
-           },
-           nextElement: function(t) {
-               return t.nextElementSibling
-           },
-           resetStyles: function() {
-               for (var t = this.firstElementChild; t;) {
-                   t.style.display = ""
-                   t.style.transition = ""
-                   t.style.transform = ""
-                   t = Tool.nextElement(t)
-               }
-           }
-        }
-        lists.addEventListener('touchstart', function(t) {
-             this.startX = t.changedTouches[0].clientX
-             this.startY = t.changedTouches[0].clientY
-             this.canGoRight = $('#alltabs > .is-active').nextElementSibling
-             this.canGoRight = this.canGoRight ? !this.canGoRight.classList.contains('hidden') : false
-             this.canGoLeft = $('#alltabs > .is-active').previousElementSibling
-             this.canGoLeft = this.canGoLeft ? !this.canGoLeft.classList.contains('hidden') : false
-             if (this.startX < 60 || cf == 'custom') {
-                 this.canGoRight = false
-                 this.canGoLeft = false
-             }
-        }, supportsPassive ? {passive: !0} : !1)
+function addItem(type, xclass, text, to, href, id) {
+	var item = document.createElement(type)
+	item.innerHTML = text
+	item.className = xclass
+	if (href) {
+		item.href = href
+	}
+	if (id) {
+		item.id = id
+	}
+	componentHandler.upgradeElement(item)
+	$(to).appendChild(item)
+}
 
-        lists.addEventListener('touchmove', function(t) {
-            if (!(this.childElementCount < 2)) {
-                if (!this.touchDir) {
-                    var e = Math.abs(t.changedTouches[0].clientX - this.startX),
-                        n = Math.abs(t.changedTouches[0].clientY - this.startY)
-                    this.touchDir = e > n ? "x" : "y"
-                }
-                if (!this.selected){
-                    this.selected = $('#lists > .is-active')
-                }
-                if ("x" === this.touchDir) {
-                    var i = Math.round(t.changedTouches[0].clientX - this.startX),
-                        prev = Tool.prevElement(this.selected),
-                        next = Tool.nextElement(this.selected)
-                    if (!prev && i > 0 || !next && i < 0 || next && i < 0 && !this.canGoRight || prev && i > 0 && !this.canGoLeft) {
-                        i = 0
-                    }
-                    Tool.translateX(this.selected, i)
-                    if (prev) Tool.translateX(prev, i - this.offsetWidth);
-                    if (next) Tool.translateX(next, i + this.offsetWidth)
-                }
-            }
-            return true
-        }, supportsPassive ? {passive: !0} : !1)
-        lists.addEventListener("transitionend", (e) => Tool.resetStyles.call(lists))
-        lists.addEventListener('touchend',function(t) {
-            if (!(this.childElementCount < 2 || t.touches.length)) {
-                if ("x" === this.touchDir) {
-                    let activeTab = $('#alltabs > .is-active')
-                    var e = Math.round(t.changedTouches[0].clientX - this.startX),
-                        prev = Tool.prevElement(this.selected),
-                        next = Tool.nextElement(this.selected)
-                    if (!prev && e > 0 || !next && e < 0 || next && e < 0 && !this.canGoRight || prev && e > 0 && !this.canGoLeft) {
-                        e = 0
-                    }
-                    if (e > 0) {
-                        if (e > 100) {
-                            if (e === this.offsetWidth) {
-                                Tool.resetStyles.call(lists)
-                            } else {
-                                activeTab.classList.remove('is-active')
-                                activeTab = activeTab.previousElementSibling
-                                activeTab.classList.add('is-active')
-                                Tool.translateX(prev, 0, !0)
-                                Tool.translateX(this.selected, this.offsetWidth, !0)
-                                $('#alltabs').scrollTo({left: activeTab.offsetLeft - 60, top: 0, behavior: 'smooth'})
-                            }
-                            this.selected = prev
-                        } else {
-                            Tool.translateX(prev, -this.offsetWidth, !0)
-                            Tool.translateX(this.selected, 0, !0)
-                        }
-                    } else {
-                        if (e < 0){
-                            if (e < -100) {
-                                if (e === -this.offsetWidth) {
-                                    Tool.resetStyles.call(lists)
-                                } else {
-                                    activeTab.classList.remove('is-active')
-                                    activeTab.nextElementSibling.classList.add('is-active')
-                                    Tool.translateX(this.selected, -this.offsetWidth, !0)
-                                    Tool.translateX(next, 0, !0)
-                                    $('#alltabs').scrollTo({left: activeTab.offsetLeft - 60 + activeTab.offsetWidth, top: 0, behavior: 'smooth'})
-                                }
-                                this.selected = next
-                            } else {
-                                Tool.translateX(this.selected, 0, !0)
-                                Tool.translateX(next, this.offsetWidth, !0)
-                            }
-                        } else {
-                             Tool.resetStyles.call(lists)
-                        }
-                    }
-                    $('#lists > .is-active').classList.remove('is-active')
-                    this.selected.classList.add('is-active')
-                }
-                this.touchDir = null
-                this.selected = null
-            }
-        }, supportsPassive ? {passive: !0} : !1)
-    }
-    function saveConfig(){
-        localStorage['rg-icons'] = icons = cicons.checked
-        localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
-        localStorage['rg-intro'] = 1
-        localStorage['rg-alphasort'] = alphasort = cazsort.checked
-        localStorage['rg-archelper'] = archiveHelper = carchelper.checked
-        localStorage['rg-performance'] = prmode = parseInt(document.getElementsByName('pmode')[0].value)
-        closeTheBox(1)
-        if(cf==''){
-            autoSelectSection()
-        } else{
-            if(confirm(locale.reload)){
-                window.location.reload()
-            }
-        }
-    }
-    function toggleBlogPost(id){
-        if($('.bpopened')){
-            relocate(`#!/blog/`)
-        } else{
-            relocate(`#!/blog/${id}`)
-        }
-    }
-    function showBlogPosts(hchange){
-        if(!isblogloaded){
-            fetchJSON('blog/blog.json').then(b=>{
-                for(let post of b){
-                    post.longtext = b64u(post.longtext)
-                    post.longtext = post.longtext.replace(/\[\[(app|cgame|game)-([0-9]+)-([^\]]+)\]\]/img,'<div><a href="#/$1s/$2"><i class="material-icons">&#xE250;</i> $3 </a></div>')
-                    post.longtext = post.longtext.replace(/@@([^@]+)@([^@]+)@@/img,'<div><button class="mdl-button mdl-js-button mdl-button--colored mdl-js-ripple-effect" onclick="this.parentElement.lastChild.classList.toggle(\'hidden\')">$1</button><div class="hidden">$2</div></div>')
-                    $('#t_-3').innerHTML+=`
+function loadScreenshots(folder) {
+	autoloader()
+	if (screenshots) {
+		fetchJSON(cf + '/data/screenshots.json').then((sc) => {
+			window['scr_' + folder] = sc
+			loaded[folder].confirm()
+			loaded[folder].confirmed = 1
+		})
+	}
+}
+
+function switchTabs(hide, show) {
+	$$(`.${hide}-tab`).forEach((e) => e.classList.add('hidden'))
+	$$(`.${show}-tab`).forEach((e) => e.classList.remove('hidden'))
+}
+
+function switchSelectedMenuItem(item) {
+	let oldm = $('.mds')
+	if (oldm) {
+		oldm.classList.remove('mds')
+	}
+	let newm = $('#me-' + item)
+	if (newm) {
+		newm.classList.add('mds')
+	}
+}
+
+function loadCoreData(folder) {
+	tt = ttt = 0
+	if (icons) {
+		fetchJSON(cf + '/data/icons.json').then((ic) => {
+			loadScreenshots(folder)
+			window['icons_' + folder] = ic
+			setTimeout(loadAppList, tt, ic)
+			setTimeout(() => {
+				$('.' + folder + '-tab').click()
+			}, tt)
+		})
+	} else {
+		loadScreenshots(folder)
+		setTimeout(loadAppList, tt, [])
+		setTimeout(() => {
+			$('.' + folder + '-tab').click()
+		}, tt)
+	}
+}
+
+function selectSection(folder) {
+	if (cf == folder) {
+		return
+	}
+	switchSelectedMenuItem(folder)
+	switchTabs(cf, folder)
+	cf = folder
+	if (!document.location.hash.match(cf)) {
+		relocate('#/' + folder + '/')
+	}
+	if (!(folder in loaded)) {
+		//load only once
+		$('#spinner').classList.remove('hidden')
+		loaded[folder] = {confirmed: 0}
+		loaded[folder].all = new Promise((res, rej) => {
+			loaded[folder].confirm = res
+		})
+		if (window.location.hash.length > 1) {
+			setTimeout(locate, 1, window.location.href)
+		}
+		loadCoreData(folder)
+	} else {
+		$('.' + cf + '-tab').click()
+	}
+}
+
+function autoSelectSection() {
+	cscreenshots.checked == screenshots ? 1 : cscreenshots.parentElement.click()
+	cicons.checked == icons ? 1 : cicons.parentElement.click()
+	cazsort.checked == alphasort ? 1 : cazsort.parentElement.click()
+	carchelper.checked = archiveHelper ? carchelper.parentElement.click() : 0
+	if (window.location.hash.length > 1) {
+		let h = parseHash(window.location.hash)[0] || 'apps'
+		if (h != 'custom') {
+			selectSection(h)
+		}
+	} else {
+		selectSection('apps')
+	}
+}
+
+function alphasorter(a, b) {
+	return a[1].toLowerCase() < b[1].toLowerCase() ? -1 : a[1].toLowerCase() > b[1].toLowerCase() ? 1 : 0
+}
+
+function pageRenderer(p, a) {
+	p = parseInt(p)
+	p = p - 1
+	let elems = $$('.mdl-layout__tab-panel.is-active >ul > div')
+	let activeElem = $('.mdl-layout__tab-panel.is-active .pactive')
+	if (!activeElem) return
+	if (activeElem.classList.contains('loadmore')) {
+		activeElem.classList.add('hidden')
+		return false
+	}
+	if (!a) {
+		activeElem.classList.add('hidden')
+		var target = elems[p]
+	} else {
+		var target = activeElem.nextElementSibling
+	}
+	if (!target) return
+	if (target == lastTarget) return
+	window.lastTarget = target
+	activeElem.classList.remove('pactive')
+	target.classList.add('pactive')
+	target.classList.remove('hidden')
+}
+function loadAppList(ic) {
+	let cats = locale.tabs[cf].map((e) => {
+		return {id: e[0], name: e[1]}
+	})
+	cats.push({id: 0, name: locale.top})
+	fetchJSON(cf + '/data/v2data.json').then((al) => {
+		if (alphasort) {
+			for (let pr in al) {
+				if (pr == 0) {
+					continue
+				}
+				al[pr].sort(alphasorter)
+			}
+		}
+		let all = []
+		for (let cat of cats) {
+			let list = '<div class="pactive">'
+			let ii = 0
+			for (var app of al[cat.id]) {
+				let icon = ic['i' + app[0]]
+				if (icon) {
+					icon = 'data:image/png;base64,' + icon
+				} else {
+					icon = '10.png'
+					if (cf == 'sapps' || cf == 'sgames') {
+						icon = '11.png'
+					}
+				}
+				let ricon = 'info'
+				let aclass = 'mi hidden'
+				if (app.length == 3) {
+					if (app[2] == 1) {
+						ricon = 'flag'
+					}
+				}
+				let appitem = `
+			<li class="mdl-list__item" onclick="relocate('#/${cf}/${app[0]}')">
+			  <span class="mdl-list__item-primary-content">
+			  <img class="mdl-list__item-icon appic" data-src="${icon}">
+			  <span class="mdl-list__item-text-body">${app[1]}</span>
+			  </span>
+			  <span class="mdl-list__item-secondary-content">
+				<a class="mdl-list__item-secondary-action" href="#/${cf}/${app[0]}"><i class="mi hidden">${ricon}</i></a>
+			  </span>
+			</li>
+			`
+				list += appitem
+				ii++
+				if (ii % MAX_ITEMS_P == 0) {
+					list += '</div><div' + (prmode > 0 ? ' class="hidden"' : '') + '>'
+				}
+				if (cat.id != 0) {
+					if (app.length == 3) {
+						app.splice(2, 1)
+					}
+					appDB.push(app.concat([cf, cat.name]))
+					all.push([appitem, app[1]])
+				}
+			}
+			let apppages = Math.ceil(al[cat.id].length / MAX_ITEMS_P)
+			if (prmode == 2 && apppages > 1) {
+				list +=
+					`</div><div class="paginator" id="page${cf + cat.id}"><img src="10.png" onload="new Pagination(this.parentElement,'page${cf +
+					cat.id}', {totalPage:${apppages}, range:${(apppages > 3 ? 5 : apppages)},callback:pageRenderer})"></div>`
+			}
+			if (prmode == 1 && apppages > 1) {
+				list += '</div><div class="loadmore mdl-button" onclick="pageRenderer(1,1)">' + locale.loadmore + '</div>'
+			}
+			if (cat.id == '0') {
+				cat.id = 'top'
+			}
+			setTimeout(insertAppList, ttt, $(`#${cf}_${cat.id}`).firstChild, list)
+			ttt += 20
+			if (cats[cats.length - 1].id == cat.id) {
+				all = alphasort ? all.sort(alphasorter) : all
+				let apppages = Math.ceil(all.length / MAX_ITEMS_P)
+				all = all
+						.map((a, b) => b == 0 ? '<div class="pactive">' + a[0] : b % MAX_ITEMS_P == 0 ? '</div><div' + (prmode > 0 ? ' class="hidden"' : '') + '>' + a[0] : a[0])
+						.join('') +
+					(prmode == 2
+						?  `</div><div class="paginator" id="page${cf + cat.id}">
+							<img src="10.png" onload="new Pagination(this.parentElement,'page${cf + cat.id}',\
+							{totalPage: ${apppages}, range:${(apppages > 3 ? 5 : apppages)},callback:pageRenderer})"></div>`
+						: prmode == 1
+						? '<div class="loadmore mdl-button" onclick="pageRenderer(1,1)">' + locale.loadmore + '</div>'
+						: '')
+				
+				setTimeout(insertAppList, 10, $(`#${cf}_all`).firstChild, all)
+				ttt += 50
+				setTimeout(() => {
+					$$('.mi.hidden').forEach((k, v) => {
+						k.className = 'material-icons'
+					})
+					$$('.appic').forEach((k, v) => {
+						if (k.src == '') {
+							k.src = k.getAttribute('data-src')
+						}
+					})
+				}, ttt)
+				ttt += 850
+				setTimeout(() => {
+					$('#spinner').classList.add('hidden')
+					all = undefined
+					$('#me-' + cf).innerHTML += '<i class="material-icons rc">check</i>'
+					componentHandler.upgradeDom()
+				}, ttt)
+			}
+		}
+	})
+}
+function insertAppList(el, list, add) {
+	el.innerHTML = add ? el.innerHTML + list : list
+	//TODO: add experimental iscroll support here
+}
+
+function autoloader(e) {
+	if (prmode == 1) {
+		Array.from(lists.children).forEach((e) =>
+			e.addEventListener(
+				'scroll',
+				(ev) => {
+					if (e.offsetHeight + e.scrollTop > e.scrollHeight - 60) {
+						pageRenderer(0, true)
+					}
+				},
+				supportsPassive ? {passive: !0} : !1
+			)
+		)
+	}
+}
+
+function optsearch() {
+	lastInput = new Date().getTime()
+	fastsearch()
+}
+
+function fastsearch() {
+	if (lastInput) {
+		if (new Date().getTime() - lastInput > 700) {
+			lastInput = false
+		} else {
+			return setTimeout(fastsearch, 720)
+		}
+	} else {
+		return
+	}
+	var text = $('#fixed-header-drawer-exp').value
+	if (prmode == 0 && text != '' && text[0] == '!') {
+		text = text.slice(1)
+		let t = new RegExp(text, 'im')
+		if (text.length > 0) {
+			if (text.length < 2) return
+			$$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e) => {
+				e.classList.add('hidden')
+			})
+			$$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e) => {
+				if (e.children[0].children[1].innerHTML.match(t)) {
+					setTimeout((e) => e.classList.remove('hidden'), 0, e)
+				}
+			})
+		} else {
+			$$('.mdl-layout__tab-panel.is-active .mdl-list__item').forEach((e) => {
+				e.classList.remove('hidden')
+			})
+		}
+	} else {
+		if (text.length > 2) {
+			let t = new RegExp(text, 'im')
+			let cc = cf
+			let results = appDB.filter((e) => e[1].match(t))
+			let total = results.length
+			results = results
+				.splice(0, 30)
+				.sort(alphasorter)
+				.sort((a, b) => {
+					if (a[2] == cc) {
+						return -9
+					} else return 9
+				})
+				.splice(0, 10)
+			if (results.length == 0) {
+				searchresults.innerHTML = `<a>${locale.notfound}</a>`
+				return
+			}
+			results.push
+			searchresults.innerHTML =
+				results.map((r) => `<a href='#/${r[2]}/${r[0]}'>${r[1]}<br>`).join('') + (total > 10 ? `<a id="totalr">${locale.found} ${total}</a>` : '')
+		} else {
+			searchresults.innerHTML = ''
+		}
+	}
+}
+
+function archiveHelperFunction(event, e, filename) {
+	const filters = []
+	filters['apps'] = ['1.1', 'BEST_GAMES_17_LITE', 'E1000_mega_konon', 'GhostSensor_K500', 'ICQMobile', 'LIKE_PC_GAME_4_FULL', 'MOBGAMES_5', 'MoM4lite', 'NUMISMAT_40',
+		'qipmobile_sie_a', 'rugame_mobi_mir_strategii_6', 'rugame_mobi_Vista', 'SlovoEd_Deluxe_Eng', 'the_best_novosti11', 'vvs_notepadRu'
+	]
+	filters['games'] = ['!P', '3DMiniGolfWor_n95_bykriker', '160.jar', '240x320_se_k770_k800_s500_t650_w850_rus_paris', '365Bowling_s5230', '996280', 
+		'AlienQuarantine_SAMSUNG_GT_S5230_EN', 'apo_se_aino_en', 'Atudela_240', 'BeachBallCrabMayhem_w', 'BMW_Racing_nokia_62', 'bubble_pop', 'CallofDuty3_n623',
+		'CBS240x320lg', 'Collapse_2010_SE_Satio', 'Circket 2016 24', 'daughter2_ru_nokia_240x320_s60', 'Dirty_D5', 'DragonMania_LG_KU', 'EarthwormJim_ru_s60',
+		'everybodys_golf_nokia_n95', 'FerrariGT3_Nokia_N73', 'formularacingpro_nokia_240x320_s60', 'GangstarCity_Samsung_GT_S8', 'GM_PowerPuffGirlsSnowboarding_Nokia_176x208',
+		'guitar_hero3_sp1_N7', 'holes_RU_Nok_360', 'iec_tophacker_f', 'JellyStar_SE_176', 'Kapsle_PL__Breakpoint_2009__k5', 'Legends_Of_Lore_Eposide1', 'loveriddle',
+		'MegaBloks_Builder_se_k6', 'Mind_Habits_nok', 'Moto Racing 3D v1.2_3', 'navy_warK800', 'Nokia_Racing', 'OregonTrailAmericanSettler_Nokia_58', 'Phone_',
+		'PocketGod_Samsung_S5', 'Puzzle_Pets', 'RealB', 'RN80', 'rugame_mobi_valentine_journey_81', 'SantaInTrouble240', 'shaolin_en_fr_it_de_es_pt_d5', 'smes',
+		'SpaceInv_s60', 'STD_CakeMania4_SEU', 'Super_golf', 'TempleRush3D2_240x4', 'TheBigLebowskiBowling_s60_32', 'tmp_10180', 'tmp_19623-2012r', 'Tomb_Raider_Underworld_3D',
+		'TRU240s6', 'uno2_nokia_e71', 'warriors_z', 'wpt-showdown.N95', 'zombiemobdefense', 'zumasrevenge_k'
+	]
+	filters['cgames'] = [ '0A', '240x320a', 'AYSJ', 'ChanKuo3_N3', 'd608', 'DPCQ2N73', 'E2.123', 'e2.313', 'e2.496', 'E2.666', 'E6.114', 'e6.302', 'e62.169', 'e62.306',
+		'E62.459', 'e62.661', 'E62.789', 'e62.957', 'fcjdE2', 'guardianlegend_s4', 'guangjinN5', 'jxihab_n', 'k700.239', 'k700.583', 'K790.145', 'K790.298', 'K790.463',
+		'K790.605', 'L6.2', 'LOK', 'MHQ', 'Myz', 'N73.215', 'n73.339', 'n73.472', 'n73.615', 'N73.787', 'n73.1007', 'n73.1208', 'n73.1332', 'n73.1470', 'N73.1633', 'n73.1817',
+		'n73_bt.20', 'n97.110', 'n97.225', 'n97.356', 'n97.484', 'n97.613', 'N5500.90', 'N5800.42', 'N5800.168', 'N5800.283', 'N7370.1', 'n7370.204', 'N7370.399', 'n7370.642',
+		'N7370.799', 'N7370.979', 'N7610.109', 'n7610.380', 'N6710.695', 'N7610.943', 'N7610.1132', 'NHDiaoyueMuzhu_v1.0.0_D6', 'PES2011_N76', 's40n7370.1', 'se_k700',
+		'SJQYE2', 'Sword_H', 'TJSXC_no', 'V8.17', 'WLQJN7610', 'XLQYK', 'ylsgsN', 'ZSSFN73', 'ZZTKW'
+	]
+	filters['sapps'] = ['0']
+	filters['sgames'] = ['0']
+	let currentFilter = filters[cf]
+	let magicNumber = 0
+	filename = filename.toLowerCase()
+	function advancedCompare(w1, w2) {
+		for (let i = 0, l = w2.length; i < l; i++) {
+			if (w1[i]) {
+				if (w1[i] != w2[i]) {
+					if (isNaN(parseInt(w1[i])) && isNaN(parseInt(w2[i]))) {
+						return w1[i] > w2[i]
+					} else {
+						if (!isNaN(parseInt(w1[i])) && !isNaN(parseInt(w2[i]))) {
+							return parseInt(w1.slice(i)) > parseInt(w2.slice(i))
+						} else {
+							let who = !isNaN(parseInt(w1[i]))
+							if (i > 0) {
+								return who && !isNaN(parseInt(w1[i - 1]))
+							} else {
+								return w1[0] > w2[0]
+							}
+						}
+					}
+				}
+			} else {
+				return false
+			}
+		}
+	}
+	if (filename < '0' || filename[0] == '_' || (!filename.endsWith('.jar') && cf[0] != 's') || filename < filters[0]) {
+		if (cf != 'games') {
+			magicNumber = currentFilter.length
+		} else {
+			magicNumber = 1
+		}
+	} else {
+		if (cf == 'games' && filename > 'zumarevenge_LG') {
+			magicNumber = 1
+		} else {
+			let i = 0
+			for (let fn of currentFilter) {
+				fn = fn.toLowerCase()
+				if (filename.startsWith(fn)) {
+					event.preventDefault()
+					return alert(cf[0] == 's' ? locale.arc0 + filename + ')' : locale.arc0 + filename + locale.arc1 + i + ', ' + (i + 1))
+				}
+				if (advancedCompare(filename, fn)) {
+					i++
+					magicNumber = i
+				} else {
+					break
+				}
+			}
+		}
+	}
+	event.preventDefault()
+	if (cf[0] != 's') {
+		alert(locale.arc0 + filename + locale.arc2 + magicNumber)
+	} else {
+		alert(locale.arc0 + filename + ')')
+	}
+}
+
+function favourite(onlycheck) {
+	function check(x) {
+		return x in favs
+	}
+	let appinfo = fvicon.name.split('|')
+	let xid = parseInt(appinfo[0])
+	let core = 'a' + appinfo[1] + '_' + xid.toString(32)
+	if (onlycheck) {
+		return check(core)
+	}
+	if (check(core)) {
+		delete favs[core]
+		fvicon.innerHTML = 'star_border'
+	} else {
+		favs[core] = appinfo[2]
+		fvicon.innerHTML = 'star'
+	}
+	localStorage['rg-fav'] = JSON.stringify(favs)
+	if ($('.mds').id == 'me-favourites') {
+		showFvs()
+	}
+}
+
+function getAppInfo(appid, folder) {
+	if (!folder) {
+		folder = cf
+	}
+	if (cf == 'custom') {
+		cf = folder
+		setTimeout(() => (cf = 'custom'), 600)
+	}
+	fetchJSON(folder + '/data/all/' + appid + '.json')
+		.then((a) => {
+			a.id = appid
+			let icons = window['icons_' + folder] || []
+			$('#appIcon').src = icons['i' + a.id] ? 'data:image/png;base64,' + icons['i' + a.id] : cf[0] == 's' ? '11.png' : '10.png'
+			document.title = a['name'] + ' - RuGame Unofficial Archive'
+			fvicon.name = appid + '|' + getCfID() + '|' + a.name
+			fvicon.innerHTML = favourite(1) ? 'star' : 'star_border'
+			setField(a, 'name', 'appTitle')
+			setField(a, 'vie', 'appViews')
+			setField(a, 'dwn', 'appDls')
+			setField(a, 'cmm', 'appComments')
+			setField(a, 'rating', 'appRating', 'rtg')
+			let appURL = 'http://rugame.mobi/' + (cf == 'cgames' ? 'china/' : 'game/') + a.id
+			$('#appSRC').href = appURL
+			$('#appWA').href = 'https://web.archive.org/web/' + appURL
+			$('#appGGL').href = 'http://webcache.googleusercontent.com/search?q=' + appURL
+			$('#appYND').href = 'https://yandex.com/search/?text=site:' + appURL
+			$('#appBNG').href = 'https://bing.com/search?q=site:' + appURL
+			$('#appYAH').href = 'https://search.yahoo.com/search?p=site:' + appURL
+			if ('rating' in a) {
+				let rtg = a.rating.rtg.split('/')
+				p1.MaterialProgress.setProgress((rtg[0] * 100) / (parseInt(rtg[0]) + parseInt(rtg[1])))
+			}
+			's3D' in a && a['s3D'] ? $('#s3D').classList.remove('hidden') : $('#s3D').classList.add('hidden')
+			'bt' in a && a['bt'] ? $('#sBT').classList.remove('hidden') : $('#sBT').classList.add('hidden')
+			setDesc(a)
+			setField(a, 'upl', 'appBy')
+			setField(a, 'vnd', 'appVendor')
+			setField(a, 'cat', 'appCat')
+			setField(a, 'add', 'appDate')
+			if ('upd' in a) {
+				setField(a, 'upd', 'appUpdate')
+			} else {
+				setField(a, 'add', 'appUpdate')
+			}
+			var dlc = ''
+			var i = 0
+			if ('files' in a) {
+				for (let f of a.files) {
+					let t = new Date().getTime() + a.id
+					dlc += f.text + '<div class="mdl-grid">'
+					for (let l of f.links) {
+						l.type = l.file.match(/(?!\.)[a-z]+$/im)
+						l.type = l.type ? l.type[0].toUpperCase() : '???'
+						i++
+						let size
+						if (f.size) {
+							size = l.type == 'JAD' ? '1Кб' : f.size + 'Кб'
+						} else {
+							size = ''
+						}
+						let link = localStorage['lmirror'] ? localStorage['lmirror'] + folder + '/' + l.file : "javascript:alert('" + locale.nomirror + "')"
+						if (l.type == '???') {
+							link = `javascript:alert('${locale.notfound}')`
+						}
+						let onclick = ''
+						let target = '_blank'
+						if (link.match('ipt:')) {
+							target = ''
+						}
+						if (link.match('file:')) {
+							onclick = `prompt('ссылка на локльный файл','${link}');`
+							link = `#dls`
+							target = ''
+						}
+						let extraclass = ''
+						if (l.not_renamed) {
+							extraclass = ' red'
+						}
+						dlc += `
+				<a href="${link}" rel="noreferrer" target="${target}" class="mdl-cell mdl-cell--5-col ai${extraclass}" id="x${t + '_' + i}" onclick="${onclick}">
+				<i class="material-icons">file_download</i>${l.type}
+				</a>
+				<div class="mdl-tooltip mdl-tooltip--top" data-mdl-for="x${t + '_' + i}">${l.file}<br>${size}</div>
+				`
+						if (archiveHelper && l.type != 'JAD' && l.file != '') {
+							dlc += `<a href="#mega" onclick="archiveHelperFunction(event, this,'${l.file}')" class="mdl-cell mdl-cell--5-col ai">
+					<i class="material-icons">archive</i>ArchiveHelper
+					</a>`
+						}
+					}
+					dlc += '</div>'
+				}
+			}
+			$('#dls').innerHTML = dlc
+			setTimeout(componentHandler.upgradeDom, 150)
+			openTheBox('thebox')
+		})
+		.catch((reason) => {
+			alert(locale.nodata)
+		})
+}
+
+function setRelated(app) {
+	if (!app.related || (app.related && app.related.length == 0)) {
+		$('#related').innerHTML = ''
+		return
+	}
+
+	let html = `<p><b>${locale.related}</b></p>`
+	for (let item of app.related) {
+		html += `<div class="mdl-list__item"><a href="#/${cf}/${item}">${appDB.find((x) => x[0] == item)[1]}</a></div>`
+	}
+	html += '<hr/>'
+	$('#related').innerHTML = html
+}
+
+function setDesc(o) {
+	let sc = ''
+	if ('desc' in o) {
+		let desc = b64u(o['desc']).replace(/\/smile\//g, 'https://web.archive.org/web/0if_/http://rugame.mobi/smile/')
+		if (!(cf in loaded)) {
+			$('#appDesc').innerHTML = desc
+		} else {
+			if (!loaded[cf].confirmed) {
+				$('#appDesc').innerHTML = desc
+			}
+			loaded[cf].all.then((s) => {
+				if (screenshots && 'i' + o.id in window['scr_' + cf]) {
+					sc += `<br><center><img src="data:image/png;base64,${window['scr_' + cf]['i' + o.id]}"></center><br>`
+				}
+				$('#appDesc').innerHTML = sc + desc
+				try {
+					setRelated(o)
+				} catch (e) {
+					console.error(e)
+				}
+			})
+		}
+	}
+}
+
+function setField(obj, prp, fld, sp) {
+	let f = $('#' + fld)
+	let p = itx
+	if (prp in obj) {
+		if (sp && sp in obj[prp]) {
+			f[p] = obj[prp][sp]
+		} else {
+			f[p] = obj[prp]
+		}
+	} else {
+		f[p] = '?'
+	}
+}
+
+function closeTheBox(b) {
+	$('#infobox').classList.add('hidden')
+	$$('.box').forEach((h) => {
+		h.classList.add('hidden')
+	})
+	if (!b) {
+		window.location.hash = '#'
+	}
+	document.title = 'RuGame Archive'
+}
+
+function openTheBox(id) {
+	$('#' + id).classList.remove('hidden')
+	$('#infobox').classList.remove('hidden')
+	$('#lybox').scroll(0, 0)
+}
+
+function showFvs() {
+	let fvhtml = ''
+	for (fv in favs) {
+		let fx = fv.substr(1)
+		let f = fx.split('_')
+		let id = parseInt(f[1], 32)
+		f = getCfID(parseInt(f[0]))
+		let n = favs[fv]
+		fvhtml += `
+		<li class="mdl-list__item" onclick="relocate('#/${f}/${id}')">
+		<span class="mdl-list__item-primary-content">
+			  <span class="mdl-list__item-text-body">${n}</span>
+		</span>
+		<span class="mdl-list__item-secondary-content">
+			<a class="mdl-list__item-secondary-action" href="#/${f}/${id}"><i class="material-icons">star</i></a>
+		</span></li>`
+	}
+	document.querySelector('#t_-4').innerHTML = fvhtml
+	showCustomTab('favourites', 4)
+}
+
+function showComments() {
+	showCustomTab('comments', 1)
+	if (!vkinit && VK) {
+		VK.init({apiId: 0x4f9438, onlyWidgets: true})
+		VK.Widgets.Comments('t_-1', {limit: 20, width: 'auto', attach: false})
+		$('#t_-1').innerHTML += '<a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a>'
+		vkinit = true
+	}
+}
+
+function autoClose() {
+	if (drawerON()) {
+		ly.MaterialLayout.toggleDrawer()
+	}
+}
+
+function drawerON() {
+	return ly.MaterialLayout.drawer_.classList.contains('is-visible')
+}
+
+function initSwipes(a) {
+	// navbar swipe opener
+	let n = {
+		open: false,
+		startloc: [],
+		complete: false,
+		iterator: 0,
+		width: 240,
+		pos: 0,
+		element: $('.mdl-layout__drawer'),
+		bg: $('.mdl-layout__obfuscator'),
+	}
+
+	window.addEventListener(
+		'touchstart',
+		function (e) {
+			n.startloc = [e.touches[0].clientX, e.touches[0].clientY]
+			n.complete = false
+			n.open = $('.mdl-layout__drawer').classList.contains('is-visible')
+			n.iterator = 0
+			n.pos = 0
+			n.allowed = $('#infobox').classList.contains('hidden')
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+
+	window.addEventListener(
+		'touchmove',
+		function (e) {
+			if ((!n.open && n.startloc[0] > 60) || (n.open && n.startloc[0] > 250) || !n.allowed) return
+			n.iterator++
+			//detect horizontal swipe
+			let loc = [e.touches[0].clientX, e.touches[0].clientY]
+			if (n.iterator > 4 && !n.complete) {
+				let diff = [loc[0] - n.startloc[0], loc[1] - n.startloc[1]]
+				if (Math.abs(diff[0]) > Math.abs(diff[1])) {
+					n.complete = true
+					n.element.style.transition = 'none'
+					n.bg.style.transition = 'none'
+				}
+			}
+			if (n.complete) {
+				n.pos = n.width - loc[0]
+				if (n.startloc[0] > 20 && !n.open) {
+					n.pos += n.startloc[0]
+				}
+				if (n.startloc[0] < 200 && n.open) {
+					n.pos -= n.width - n.startloc[0]
+				}
+				n.pos = n.pos < 0 ? 0 : n.pos
+				n.element.style.transform = `translate(-${n.pos}px)`
+				n.bg.style.opacity = 1 - n.pos / 250
+			}
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+
+	window.addEventListener(
+		'touchend',
+		function () {
+			if (n.complete) {
+				n.element.style.transition = '.4s all'
+				n.bg.style.transition = '.4s all'
+				n.element.style.transform = ''
+				n.bg.style.opacity = ''
+				if (n.pos < 135) {
+					n.element.classList.add('is-visible')
+					n.bg.classList.add('is-visible')
+				} else {
+					n.element.classList.remove('is-visible')
+					n.bg.classList.remove('is-visible')
+				}
+			}
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+
+	//tab swipe switcher
+	let Tool = {
+		translateX: function (t, e, n) {
+			;(t.style.display = 'block'), (t.style.transition = n ? 'transform 0.2s' : ''), (t.style.transform = 'translate3d(' + e + 'px, 0, 0)')
+		},
+		prevElement: function (t) {
+			return t.previousElementSibling
+		},
+		nextElement: function (t) {
+			return t.nextElementSibling
+		},
+		resetStyles: function () {
+			for (var t = this.firstElementChild; t; ) {
+				t.style.display = ''
+				t.style.transition = ''
+				t.style.transform = ''
+				t = Tool.nextElement(t)
+			}
+		},
+	}
+	
+	lists.addEventListener(
+		'touchstart',
+		function (t) {
+			this.startX = t.changedTouches[0].clientX
+			this.startY = t.changedTouches[0].clientY
+			this.canGoRight = $('#alltabs > .is-active').nextElementSibling
+			this.canGoRight = this.canGoRight ? !this.canGoRight.classList.contains('hidden') : false
+			this.canGoLeft = $('#alltabs > .is-active').previousElementSibling
+			this.canGoLeft = this.canGoLeft ? !this.canGoLeft.classList.contains('hidden') : false
+			if (this.startX < 60 || cf == 'custom') {
+				this.canGoRight = false
+				this.canGoLeft = false
+			}
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+
+	lists.addEventListener(
+		'touchmove',
+		function (t) {
+			if (!(this.childElementCount < 2)) {
+				if (!this.touchDir) {
+					var e = Math.abs(t.changedTouches[0].clientX - this.startX),
+						n = Math.abs(t.changedTouches[0].clientY - this.startY)
+					this.touchDir = e > n ? 'x' : 'y'
+				}
+				if (!this.selected) {
+					this.selected = $('#lists > .is-active')
+				}
+				if ('x' === this.touchDir) {
+					var i = Math.round(t.changedTouches[0].clientX - this.startX),
+						prev = Tool.prevElement(this.selected),
+						next = Tool.nextElement(this.selected)
+					if ((!prev && i > 0) || (!next && i < 0) || (next && i < 0 && !this.canGoRight) || (prev && i > 0 && !this.canGoLeft)) {
+						i = 0
+					}
+					Tool.translateX(this.selected, i)
+					if (prev) Tool.translateX(prev, i - this.offsetWidth)
+					if (next) Tool.translateX(next, i + this.offsetWidth)
+				}
+			}
+			return true
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+	lists.addEventListener('transitionend', (e) => Tool.resetStyles.call(lists))
+	lists.addEventListener(
+		'touchend',
+		function (t) {
+			if (!(this.childElementCount < 2 || t.touches.length)) {
+				if ('x' === this.touchDir) {
+					let activeTab = $('#alltabs > .is-active')
+					var e = Math.round(t.changedTouches[0].clientX - this.startX),
+						prev = Tool.prevElement(this.selected),
+						next = Tool.nextElement(this.selected)
+					if ((!prev && e > 0) || (!next && e < 0) || (next && e < 0 && !this.canGoRight) || (prev && e > 0 && !this.canGoLeft)) {
+						e = 0
+					}
+					if (e > 0) {
+						if (e > 100) {
+							if (e === this.offsetWidth) {
+								Tool.resetStyles.call(lists)
+							} else {
+								activeTab.classList.remove('is-active')
+								activeTab = activeTab.previousElementSibling
+								activeTab.classList.add('is-active')
+								Tool.translateX(prev, 0, !0)
+								Tool.translateX(this.selected, this.offsetWidth, !0)
+								$('#alltabs').scrollTo({left: activeTab.offsetLeft - 60, top: 0, behavior: 'smooth'})
+							}
+							this.selected = prev
+						} else {
+							Tool.translateX(prev, -this.offsetWidth, !0)
+							Tool.translateX(this.selected, 0, !0)
+						}
+					} else {
+						if (e < 0) {
+							if (e < -100) {
+								if (e === -this.offsetWidth) {
+									Tool.resetStyles.call(lists)
+								} else {
+									activeTab.classList.remove('is-active')
+									activeTab.nextElementSibling.classList.add('is-active')
+									Tool.translateX(this.selected, -this.offsetWidth, !0)
+									Tool.translateX(next, 0, !0)
+									$('#alltabs').scrollTo({left: activeTab.offsetLeft - 60 + activeTab.offsetWidth, top: 0, behavior: 'smooth'})
+								}
+								this.selected = next
+							} else {
+								Tool.translateX(this.selected, 0, !0)
+								Tool.translateX(next, this.offsetWidth, !0)
+							}
+						} else {
+							Tool.resetStyles.call(lists)
+						}
+					}
+					$('#lists > .is-active').classList.remove('is-active')
+					this.selected.classList.add('is-active')
+				}
+				this.touchDir = null
+				this.selected = null
+			}
+		},
+		supportsPassive ? {passive: !0} : !1
+	)
+}
+
+function saveConfig() {
+	localStorage['rg-icons'] = icons = cicons.checked
+	localStorage['rg-screenshots'] = screenshots = cscreenshots.checked
+	localStorage['rg-intro'] = 1
+	localStorage['rg-alphasort'] = alphasort = cazsort.checked
+	localStorage['rg-archelper'] = archiveHelper = carchelper.checked
+	localStorage['rg-performance'] = prmode = parseInt(document.getElementsByName('pmode')[0].value)
+	closeTheBox(1)
+	if (cf == '') {
+		autoSelectSection()
+	} else {
+		if (confirm(locale.reload)) {
+			window.location.reload()
+		}
+	}
+}
+
+function toggleBlogPost(id) {
+	if ($('.bpopened')) {
+		relocate(`#!/blog/`)
+	} else {
+		relocate(`#!/blog/${id}`)
+	}
+}
+
+function showBlogPosts(hchange) {
+	if (!isblogloaded) {
+		fetchJSON('blog/blog.json').then((b) => {
+			for (let post of b) {
+				post.longtext = b64u(post.longtext)
+				post.longtext = post.longtext.replace(
+					/\[\[(app|cgame|game)-([0-9]+)-([^\]]+)\]\]/gim,
+					'<div><a href="#/$1s/$2"><i class="material-icons">&#xE250;</i> $3 </a></div>'
+				)
+				post.longtext = post.longtext.replace(
+					/@@([^@]+)@([^@]+)@@/gim,
+					'<div><button class="mdl-button mdl-js-button mdl-button--colored mdl-js-ripple-effect" onclick="this.parentElement.lastChild.classList.toggle(\'hidden\')">$1</button><div class="hidden">$2</div></div>'
+				)
+				$('#t_-3').innerHTML += `
 <div class="mdl-grid blogpost" id="blog_${post.id}">
 <div class="mdl-card--expand mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
 <div class="mdl-card__title" style="background:url(${post.bgpic})" onclick="toggleBlogPost(${post.id})"><h2 class="mdl-card__title-text">${post.title}</h2></div>
@@ -831,136 +963,141 @@ ${post.desc}
 <div class="mdl-card__actions mdl-card--border">${post.longtext}</div>
 </div>
 </div>`
-            blogposts[post.id] = post
-                }
-            })
-        }
-        showCustomTab('blog',3,hchange===false?false:undefined)
-        isblogloaded = true
-    }
-    function showMirrors(){
-        let localM = localStorage['rg-lmirror'] || false;
-        document.querySelector('#t_-5').innerHTML = locale.mirrormenu
-        showCustomTab('mirrors',5)
-    }
-    function showCustomTab(menuItem,id,norelocate){
-        switchTabs(cf,'')
-        switchSelectedMenuItem(menuItem)
-        $("#tab_t_-"+id).click()
-        cf='custom'
-        if(typeof norelocate == 'undefined'){
-            relocate('#!/'+menuItem)
-        }
-    }
-
-    function clk(arg,id){
-        autoClose()
-        menuA[id](arg,id)
-    }
-
-    function selectMirrorPath(){
-        var lmp = prompt('Введите путь до основной папки',atob('aHR0cDovL29sZGZhZy50b3AvdHJhc2gv'));
-        if(lmp){
-            if(!lmp.match(/^http|^ftp/i)){
-                lmp = lmp.replace(/file:\/\/\/?/g,'')
-                lmp='file:///'+lmp
-                lmp = lmp.replace(/\\/g,'/')
-                lmp = lmp[lmp.length-1] =='/'?lmp:lmp+'/'
-                alert('Браузеры не позволяют ссылаться напрямую на локальные файлы. В качестве решения будет показано окно с ссылкой на локалньый файл. Её можно скопировать и вставить в адресную строку. В качестве альтернативы можно поставить локальный сервер, с ним все будет работать напрямую.')
-            }
-            localStorage['lmirror']=lmp
-        }
-    }
-    function registerSW(){
-    	let updateReady = function (worker) {
-        	worker.postMessage({ action: 'refresh' })
-    	}
-    	if('serviceWorker' in navigator && location.protocol === 'https:'){
-    	navigator.serviceWorker.register('./sw.js').then(function (reg) {
-    	    if (!navigator.serviceWorker.controller) {
-    	      return;
-    	    }
-
-    	    if (reg.waiting) {
-    	      updateReady(reg.waiting);
-    	      return;
-    	    }
-    	    if (reg.installing) {
-    	      return;
-    	    }
-
-    	    reg.addEventListener('updatefound', ()=>{
-    	    	let rfr = (w)=>{
-    	    		w.addEventListener('statechange', ()=>{
-    	    			if(w.state === 'installed'){
-    	    				updateReady(w)
-    	    			}
-    	    		})
-    	    	}
-    	    	rfr(reg.installing)
-    	    })
-    	}).catch(e=>console.log('Unable to register serviceWorker!'))
-    	let refreshing
-      	navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-      		if (refreshing) return;
-        	window.location.reload();
-        	refreshing = true;
-        });
-        }
-    }
-    setTimeout(()=>{
-        let u = 0;
-        for(let folder in locale.folders){
-                if(u<3){
-                    addItem('a','mdl-navigation__link','<i class="material-icons">keyboard_arrow_right</i>'+locale.folders[folder],'#jcontent',`javascript:clk('${folder}',0)`,'me-'+folder);
-                }
-                else{
-                    addItem('a','mdl-navigation__link','<i class="material-icons">keyboard_arrow_right</i>'+locale.folders[folder],'#scontent',`javascript:clk('${folder}',0)`,'me-'+folder);
-                }
-            u++;
-        }
-        addItem('a','mdl-navigation__link','<i class="material-icons mic">star</i>'+locale.favs,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('favourites',5);`,'me-favourites');
-        addItem('a','mdl-navigation__link','<i class="material-icons mic">settings</i>'+locale.about,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('about',1);`,'me-about');
-        //addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
-        if(locale.l=='ru'){
-            addItem('a','mdl-navigation__link','<i class="material-icons mic">book</i>Блог','.mdl-layout__drawer .mdl-navigation',`javascript:clk('blog',3)`,'me-blog');
-            addItem('a','mdl-navigation__link','<i class="material-icons mic">mode_comment</i>'+locale.comments,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,4)','me-comments');
-        }
-        addItem('a','mdl-navigation__link','<i class="material-icons mic">clear_all</i>'+locale.mirrors,'.mdl-layout__drawer .mdl-navigation','javascript:clk(0,6)','me-mirrors');
-        initSwipes()
-        setTimeout(() => {
-            getmdlSelect.init(".getmdl-select")
-            $$('.mdl-menu__item')[prmode||1].click()
-        }, 400);
-        if(localStorage['rg-intro'] || navigator.userAgent.match('bot')||window.location.hash.match('blog')){
-            autoSelectSection()
-        } else{
-            openTheBox('about')
-        }
-        registerSW()
-    }, 1200);
-function generateMirrorSample(){
-    let q = appDB.map(x=>'agcsz'[getCfID(x[2])]+x[0]+" : "+x[1]).sort().join("\r\n");
-    q = URL.createObjectURL(new Blob(['\ufeff'+q],{encoding:"UTF-8",type:"text/plain;charset=UTF-8"}))
-    let l = appDB.length
-    let e = $("#msample");
-    e.innerHTML = `<br>Ссылка на файл (${l} приложений). Если не открывается, отключите блокировщик рекламы (её тут и так нет).`
-    e.href=q;
-    e.target='_blank';
-    e.click();
-}
-function switchLang(){
-    localStorage['rg-lng'] = locale.l==='en'?'ru':'en';
-    window.location.reload();
+				blogposts[post.id] = post
+			}
+		})
+	}
+	showCustomTab('blog', 3, hchange === false ? false : undefined)
+	isblogloaded = true
 }
 
-    var menuA = [
-        selectSection,
-        openTheBox,
-        showCustomTab,
-        showBlogPosts,
-        showComments,
-        showFvs,
-        showMirrors
-    ]
+function showMirrors() {
+	let localM = localStorage['rg-lmirror'] || false
+	document.querySelector('#t_-5').innerHTML = locale.mirrormenu
+	showCustomTab('mirrors', 5)
 }
+
+function showCustomTab(menuItem, id, norelocate) {
+	switchTabs(cf, '')
+	switchSelectedMenuItem(menuItem)
+	$('#tab_t_-' + id).click()
+	cf = 'custom'
+	if (typeof norelocate == 'undefined') {
+		relocate('#!/' + menuItem)
+	}
+}
+
+function clk(arg, id) {
+	autoClose()
+	menuA[id](arg, id)
+}
+
+function selectMirrorPath() {
+	var lmp = prompt('Введите путь до основной папки', atob('aHR0cDovL29sZGZhZy50b3AvdHJhc2gv'))
+	if (lmp) {
+		if (!lmp.match(/^http|^ftp/i)) {
+			lmp = lmp.replace(/file:\/\/\/?/g, '')
+			lmp = 'file:///' + lmp
+			lmp = lmp.replace(/\\/g, '/')
+			lmp = lmp[lmp.length - 1] == '/' ? lmp : lmp + '/'
+			alert(
+				'Браузеры не позволяют ссылаться напрямую на локальные файлы. В качестве решения будет показано окно с ссылкой на локалньый файл. Её можно скопировать и вставить в адресную строку. В качестве альтернативы можно поставить локальный сервер, с ним все будет работать напрямую.'
+			)
+		}
+		localStorage['lmirror'] = lmp
+	}
+}
+
+function registerSW() {
+	let updateReady = function (worker) {
+		worker.postMessage({action: 'refresh'})
+	}
+	if ('serviceWorker' in navigator && location.protocol === 'https:') {
+		navigator.serviceWorker
+			.register('./sw.js')
+			.then(function (reg) {
+				if (!navigator.serviceWorker.controller) {
+					return
+				}
+
+				if (reg.waiting) {
+					updateReady(reg.waiting)
+					return
+				}
+				if (reg.installing) {
+					return
+				}
+
+				reg.addEventListener('updatefound', () => {
+					let rfr = (w) => {
+						w.addEventListener('statechange', () => {
+							if (w.state === 'installed') {
+								updateReady(w)
+							}
+						})
+					}
+					rfr(reg.installing)
+				})
+			})
+			.catch((e) => console.log('Unable to register serviceWorker!'))
+		let refreshing
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			if (refreshing) return
+			window.location.reload()
+			refreshing = true
+		})
+	}
+}
+
+setTimeout(() => {
+	let u = 0
+	for (let folder in locale.folders) {
+		if (u < 3) {
+			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#jcontent', `javascript:clk('${folder}',0)`, 'me-' + folder)
+		} else {
+			addItem('a', 'mdl-navigation__link', '<i class="material-icons">keyboard_arrow_right</i>' + locale.folders[folder], '#scontent', `javascript:clk('${folder}',0)`, 'me-' + folder)
+		}
+		u++
+	}
+	
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">star</i>' + locale.favs, '.mdl-layout__drawer .mdl-navigation', `javascript:clk('favourites',5);`, 'me-favourites')
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">settings</i>' + locale.about, '.mdl-layout__drawer .mdl-navigation', `javascript:clk('about',1);`, 'me-about')
+	//addItem('a','mdl-navigation__link',locale.stats,'.mdl-layout__drawer .mdl-navigation',`javascript:clk('stats',2)`,'me-stats');
+	if (locale.l == 'ru') {
+		addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">book</i>Блог', '.mdl-layout__drawer .mdl-navigation', `javascript:clk('blog',3)`, 'me-blog')
+		addItem( 'a', 'mdl-navigation__link', '<i class="material-icons mic">mode_comment</i>' + locale.comments, '.mdl-layout__drawer .mdl-navigation', 'javascript:clk(0,4)', 'me-comments')
+	}
+	
+	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">clear_all</i>' + locale.mirrors, '.mdl-layout__drawer .mdl-navigation', 'javascript:clk(0,6)', 'me-mirrors')
+	initSwipes()
+	setTimeout(() => {
+		getmdlSelect.init('.getmdl-select')
+		$$('.mdl-menu__item')[prmode || 1].click()
+	}, 400)
+	
+	if (localStorage['rg-intro'] || navigator.userAgent.match('bot') || window.location.hash.match('blog')) {
+		autoSelectSection()
+	} else {
+		openTheBox('about')
+	}
+	
+	registerSW()
+}, 1200)
+
+function generateMirrorSample() {
+	let q = appDB.map((x) => 'agcsz'[getCfID(x[2])] + x[0] + ' : ' + x[1]).sort().join('\r\n')
+	q = URL.createObjectURL(new Blob(['\ufeff' + q], {encoding: 'UTF-8', type: 'text/plain;charset=UTF-8'}))
+	let l = appDB.length
+	let e = $('#msample')
+	e.innerHTML = `<br>Ссылка на файл (${l} приложений). Если не открывается, отключите блокировщик рекламы (её тут и так нет).`
+	e.href = q
+	e.target = '_blank'
+	e.click()
+}
+
+function switchLang() {
+	localStorage['rg-lng'] = locale.l === 'en' ? 'ru' : 'en'
+	window.location.reload()
+}
+
+var menuA = [selectSection, openTheBox, showCustomTab, showBlogPosts, showComments, showFvs, showMirrors]
