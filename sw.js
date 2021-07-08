@@ -1,4 +1,4 @@
-var staticCache = 'rg-main-v8'
+var staticCache = 'rg-main-v9'
 var allCaches = [staticCache]
 
 self.addEventListener('install', (event) => {
@@ -20,7 +20,7 @@ self.addEventListener('install', (event) => {
         './cgames/data/v2data.json',
         './sapps/data/v2data.json',
         './sgames/data/v2data.json',
-        './icon.png'])
+        './icon.png'].map(x => new Request(x, {cache: 'no-cache'})))
   }))
 })
 
