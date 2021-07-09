@@ -46,7 +46,7 @@ function parseHash(url) {
         url = window.location.origin + '/' + url
     }
     let h = new URL(url).hash.substr(1)
-    let type = h.match(/^\/(apps|games|cgames|sapps|sgames)\/([0-9]+)\/?$/i)
+    let type = h.match(/^\/(apps|games|cgames|sapps|sgames)\/?([0-9]+)?\/?$/i)
     let blog = h.match(/\!\/blog\/?([0-9]+)?\/?/i)
     let bug = h.match(/apps_all/i)
     if (bug) {
@@ -84,9 +84,13 @@ function parseHash(url) {
         return ['custom']
     }
     if (type) {
-        let at = type[1]
-        let id = parseInt(type[2])
-        return [at, id]
+    	let at = type[1]
+    	if (type[2]) {
+			let id = parseInt(type[2])
+			return [at, id]
+		} else {
+			return [at]
+		}
     } else {
         if (h == '') {
             closeTheBox()
@@ -97,7 +101,7 @@ function parseHash(url) {
 
 function locate(url) {
     let r = parseHash(url)
-    if (r && r != 'custom') {
+    if (r && r != 'custom' && r.length > 1) {
         getAppInfo(r[1], r[0])
     }
 }

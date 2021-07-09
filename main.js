@@ -154,13 +154,33 @@ function selectSection(folder) {
 	}
 }
 
+function setContentVisibilityListRendering(mode) {
+	if (mode == -1) {
+		$('#lists').classList.add('cvmode')
+	}
+}
+
+function setupConfiguredOptions() {
+	getmdlSelect.init('.getmdl-select')
+	
+	if (typeof pageRenderingMode != 'number' || isNaN(pageRenderingMode)) {
+		pageRenderingMode = 2
+	}
+	
+	if (localStorage['rg-intro']) {
+		cscreenshots.checked == screenshots ? 1 : cscreenshots.parentElement.click()
+		cicons.checked == icons ? 1 : cicons.parentElement.click()
+		cazsort.checked == alphasort ? 1 : cazsort.parentElement.click()
+		carchelper.checked = archiveHelper ? carchelper.parentElement.click() : 0
+		setContentVisibilityListRendering(pageRenderingMode)
+	}
+	
+	$$('.mdl-menu__item')[(pageRenderingMode + 1)].click()
+}
+
 function autoSelectSection() {
-	cscreenshots.checked == screenshots ? 1 : cscreenshots.parentElement.click()
-	cicons.checked == icons ? 1 : cicons.parentElement.click()
-	cazsort.checked == alphasort ? 1 : cazsort.parentElement.click()
-	carchelper.checked = archiveHelper ? carchelper.parentElement.click() : 0
 	if (window.location.hash.length > 1) {
-		let h = parseHash(window.location.hash)[0] || 'apps'
+		let h = parseHash(window.location.hash)[0]
 		if (h != 'custom') {
 			selectSection(h)
 		}
@@ -341,7 +361,7 @@ function fastsearch() {
 		return
 	}
 	var text = $('#fixed-header-drawer-exp').value
-	if (pageRenderingMode == 0 && text != '' && text[0] == '!') {
+	if (pageRenderingMode <= 0 && text != '' && text[0] == '!') {
 		text = text.slice(1)
 		let t = new RegExp(text, 'im')
 		if (text.length > 0) {
@@ -924,6 +944,7 @@ function saveConfig() {
 	closeTheBox(1)
 	if (cf == '') {
 		autoSelectSection()
+		setContentVisibilityListRendering(pageRenderingMode)
 	} else {
 		if (confirm(locale.reload)) {
 			window.location.reload()
@@ -1073,10 +1094,7 @@ setTimeout(() => {
 	
 	addItem('a', 'mdl-navigation__link', '<i class="material-icons mic">clear_all</i>' + locale.mirrors, '.mdl-layout__drawer .mdl-navigation', 'javascript:click(0,6)', 'me-mirrors')
 	initSwipes()
-	setTimeout(() => {
-		getmdlSelect.init('.getmdl-select')
-		$$('.mdl-menu__item')[pageRenderingMode || 1].click()
-	}, 400)
+	setTimeout(setupConfiguredOptions, 400)
 	
 	if (localStorage['rg-intro'] || navigator.userAgent.match('bot') || window.location.hash.match('blog')) {
 		autoSelectSection()
