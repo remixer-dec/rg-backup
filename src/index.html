@@ -8,6 +8,7 @@
 	<meta name="application-name" content="RG-Backup">
 	<meta name="description" content="J2ME & Symbian app and game info archive. Неофициальный архив rugame.mobi | Java и Symbian игры и приложения"/>
 	<meta name="theme-color" content="#8BC34A">
+	<meta name="referrer" content="same-origin">
 	<link rel='icon' href='10.png'>
 	<link rel="manifest" href="manifest.json">
 	<title>RuGame Archive</title>
@@ -33,176 +34,44 @@
 		0% { transform:translateY(0) }
 		100% { transform:translateY(-20%) }
 	}
+	body[v-cloak] .material-icons {
+    	font-size: 1px !important;
+    	max-width: 0px !important;
+	}
+	/*
+	.mdl-layout.is-upgraded .mdl-layout__tab-panel {
+		display: block !important;
+		visibility: hidden;
+	}
+	.mdl-layout.is-upgraded .mdl-layout__tab-panel.is-active {
+		visibility: visible;
+	}
+	*/
 	</style>
 </head>
-<body>
+<body v-cloak>
 	<div id="splash"></div>
 	<div id="spinner">
 		<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active"></div>
 	</div>
-	<!--noindex-->
+	<div v-scope="AppPage()" v-if="app.selectedId && (app.selectedDir in locale.tabs)" @mounted="load"></div>
+	<div v-scope="QuickSettingsWindow()" v-if="app.ui == 'settings'" @mounted="mounted"></div>
 	<div id="infobox" class="hidden">
-		<div class="boxbg"  onclick="closeTheBox()"></div>
-		<i class="material-icons" id="closethebox" onclick="closeTheBox()">close</i>
-		<div id="about" class="box">
-			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-				<header class="mdl-layout__header">
-				<i class="material-icons mdl-layout-icon">settings</i>
-				<div class="mdl-layout__header-row">
-					<span class="mdl-layout-title"><span id="ab1" class="lc">about</span></span>
-					<span id="ab2" onclick="switchLang()" class="lc">l</span>
-				</div>
-				</header>
-				<div class="mdl-grid">
-					<div class="mdl-cell mdl-cell--12-col" style="text-align:justify">
-						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons">videogame_asset</i></div>
-						<div class="lc">about2</div>
-						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons">wifi</i></div>
-						<div class="lc">traffic</div>
-						<div id="config" class="mdl-grid" style="text-align:center">
-							<div class="mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet">
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cicons">
-								<input type="checkbox" id="cicons" class="mdl-switch__input" checked>
-								<span class="mdl-switch__label lc">icons</span>
-							</label>
-							</div>
-							<div class=" mdl-cell mdl-cell--4-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cscreenshots">
-								<input type="checkbox" id="cscreenshots" class="mdl-switch__input" checked>
-								<span class="mdl-switch__label lc">screenshots</span>
-							</label>
-							</div>
-							<div style="margin-top:60px">
-							</div>
-							<div class="mdl-grid">
-								<div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons">sort_by_alpha</i></div>
-							</div>
-							<div class=" mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet">
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cazsort">
-								<input type="checkbox" id="cazsort" class="mdl-switch__input">
-								<span class="mdl-switch__label lc">alphasort</span>
-							</label><br><br>
-							<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="carchelper">
-								<input type="checkbox" id="carchelper" class="mdl-switch__input">
-								<span class="mdl-switch__label lc">archivehelper</span>
-							</label><br><br>
-							<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height">
-							     <input type="text" value="" class="mdl-textfield__input" id="pmode" readonly>
-							     <input type="hidden" value="" name="pmode">
-							     <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
-							     <label for="pmode" class="mdl-textfield__label lc">listmode</label>
-							     <ul for="pmode" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
-									 <li class="mdl-menu__item lc" data-val="-1">pfullcv</li>
-							         <li class="mdl-menu__item lc" data-val="0">pfull</li>
-							         <li class="mdl-menu__item lc" data-selected="true" data-val="1">pload</li>
-							         <li class="mdl-menu__item lc" data-val="2">ppage</li>
-							     </ul>
-							 </div>
-							</div>
-						</div><br>
-						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
-							<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col lc" onclick="saveConfig()">save</button><br>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="thebox" class="box hidden">
-			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header" id='lybox'>
-				<header class="mdl-layout__header">
-					<img class="mdl-layout-icon" id="appIcon" src="10.png">
-				    <div class="mdl-layout__header-row" id="appTop">
-				    	<span class="mdl-layout-title marquee" id="titleoverlay"><span id='appTitle'></span>
-				        	<i class="material-icons" id="s3D">3d_rotation</i><i id="sBT" class="material-icons">bluetooth</i></span>
-				    	<div class="mdl-layout-spacer"></div>
-				        <nav class="mdl-navigation">
-				        	<i class="material-icons mdl-navigation__link" onclick="favourite()" id="fvicon">star_border</i>
-				        	<i class="material-icons mdl-navigation__link" onclick="$('#appLinks').classList.toggle('hidden')">cloud_upload</i>
-				        </nav>
-				    </div>
-				    <div id="appLinks" class="mdl-layout__header-row mdl-grid hidden">
-				    	<a href="#" id="appSRC" target="_blank" class="mdl-cell  ai">
-				    	<i class="material-icons">public</i>
-				    	<span class="lc" tabindex="0">src</span></a>
-				    	<a href="#" id="appWA" target="_blank" class="mdl-cell ai">
-				    	<i class="material-icons">archive</i>
-				    	<span tabindex="0">W/A</span></a>
-				    	<a href="#" id="appGGL" target="_blank" class="mdl-cell ai">
-				    	<i class="material-icons">cloud_queue</i>
-				    	<span tabindex="0">Google</span></a>
-				    	<a href="#" id="appYND" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
-				    	<i class="material-icons">cloud_queue</i>
-				    	<span tabindex="0">Yandex</span></a>
-				    	<a href="#" id="appBNG" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
-				    	<i class="material-icons">cloud_queue</i>
-				    	<span tabindex="0">Bing</span></a>
-				    	<a href="#" id="appYAH" target="_blank" onclick="alert(locale.copy)" class="mdl-cell ai">
-				    	<i class="material-icons">cloud_queue</i>
-				    	<span tabindex="0">Yahoo</span></a>
-				    </div>
-				    <div class="mdl-layout__header-row mdl-grid">
-				    	  <div class="mdl-cell ai">
-				    	  <i class="material-icons">remove_red_eye</i>
-				    	  <span id="appViews"></span></div>
-				    	  <a href="#dls" class="mdl-cell ai">
-						  <i class="material-icons">file_download</i>
-				    	  <span id="appDls"></span></a>
-				    	  <a href="#" class="mdl-cell ai">
-						  <i class="material-icons">comment</i>
-				    	  <span id="appComments"></span></a>
-				    </div>
-				    <div id="p1" class="mdl-progress mdl-js-progress"></div>
-				    <div id ="appRating" class="mdl-tooltip" data-mdl-for="p1">0/100</div>
-				</header>
-				<p id="appDesc">
-				</p>
-				<div>
-				<div class="mdl-grid">
-						<div class="mdl-cell mdl-cell--4-col ai">
-							<i class="material-icons">person_pin</i>
-							<span id="appBy"></span>
-						</div>
-						<div class="mdl-cell mdl-cell--4-col ai">
-							<i class="material-icons">work</i>
-							<span id="appVendor"></span>
-						</div>
-						<div class="mdl-cell mdl-cell--4-col ai">
-							<i class="material-icons">label</i>
-							<span id="appCat"></span>
-						</div>
-				</div>
-				<div class="mdl-grid">
-					<div class="mdl-cell mdl-cell--5-col ai">
-						<i class="material-icons">file_upload</i>
-						   <span id="appDate"></span>
-					</div>
-					<div class="mdl-cell mdl-cell--5-col ai">
-						<i class="material-icons">update</i>
-						  <span id="appUpdate"></span>
-					</div>
-				</div>
-				</div>
-				<span id='tooltips'></span>
-				<hr>
-				<div id="related"></div>
-				<div id="dls">
-				</div>
-			</div>
-		</div>
+		<i class="material-icons" id="closethebox" onclick="closeTheBox()" data-icon="close"></i>
 	</div>
-	<!--/noindex-->
 	<div class="container">
 		<div id="ly" class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
 		            mdl-layout--fixed-header">
-		  <header class="mdl-layout__header">
+		  <header class="mdl-layout__header" :class="{hideTabs: !(app.selectedDir in locale.tabs)}" v-scope="">
 		    <div class="mdl-layout__header-row">
 		    <span class="mdl-layout-title">RuGame Archive</span>
 		      <div class="mdl-layout-spacer"></div>
 		      <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable
 		                  mdl-textfield--floating-label mdl-textfield--align-right" id="searchbar">
+				<i class="material-icons topright" :data-icon="app.alphasort ? 'sort' : 'sort_by_alpha'" v-if="app.selectedDir in locale.tabs" @click="app.datasource.swapSorted()"></i>
 		        <label class="mdl-button mdl-js-button mdl-button--icon"
 		               for="fixed-header-drawer-exp">
-		          <i class="material-icons">search</i>
+		          <i class="material-icons" data-icon="search"></i>
 		        </label>
 		        <div class="mdl-textfield__expandable-holder">
 		          <input class="mdl-textfield__input" type="text" name="srch" id="fixed-header-drawer-exp" onkeyup="optsearch()" onfocus="searchresults.classList.remove('hidden')" onblur="setTimeout(()=>searchresults.classList.add('hidden'),400)">
@@ -210,28 +79,296 @@
 		        <div id="searchresults" class="hidden"></div>
 		      </div>
 		    </div>
-		    <div id="alltabs" class="tabs mdl-layout__tab-bar mdl-js-ripple-effect">
-				</div>
+			<div class="tabs mdl-layout__tab-bar mdl-js-ripple-effect" v-scope="TabGroup()" v-show="app.selectedDir in locale.tabs"></div>
 		  </header>
 		  <div class="mdl-layout__drawer">
-		    <nav class="mdl-navigation mds">
-		    	<div class="mspoiler">
-		    		<div class="mheader" onclick="this.parentElement.classList.toggle('mopen')"><i class="material-icons mic">smartphone</i>J2ME<i class="material-icons marr">keyboard_arrow_down</i>
-		    		</div>
-		    		<div id="jcontent" class="mcontent">
-		    		</div>
-		    	</div>
-		    	<div class="mspoiler"><div class="mheader" onclick="this.parentElement.classList.toggle('mopen')"><i class="material-icons mic">tablet</i>Symbian<i class="material-icons marr">keyboard_arrow_down</i></div>
-				<div id="scontent" class="mcontent" ></div>
-		    	</div>
+		    <nav class="mdl-navigation">
+		    	<div v-scope="MenuItemSpoiler(javaMenuSpoiler)"></div>
+				<div v-scope="MenuItemSpoiler(symbianMenuSpoiler)"></div>
+				<div v-once v-scope="MenuItemGroup(mainMenuItemGroup)"></div>
 		    </nav>
-		    <small id="version">v2.10.2 ~ 09/07/21</small>
+		    <small id="version">v3.0-pv beta ~ 05/08/21</small>
 		  </div>
 		  <main id="lists" class="mdl-layout__content">
+			  <section @scroll.passive="loadOnScroll" class="mdl-layout__tab-panel" v-for="(category, catId) in app.currentMeta" v-scope="TabContent({catId, category})" :class="{'is-active': isVisible(catId)}"></section>
+			  <div v-scope="CustomContentFragment()"></div>
 		  </main>
 		</div>
 	</div>
-	<script defer src='lang.js'></script>
-	<script defer src='init.js'></script>
+	<template id="MenuItem">
+		<a class="mdl-navigation__link" :class="{mds: app.selectedDir == link}" :href="app.prefix + link"><i class="material-icons mic" :data-icon="icon"></i>{{name}}</a>
+	</template>
+	<template id="MenuItemGroup">
+		<div v-scope="MenuItem(item)" v-for="item in items"></div>
+	</template>
+	<template id="MenuItemSpoiler">
+		<div class="mspoiler" :class="{mopen: open}">
+			<div class="mheader" @click=toggleSpoiler()>
+				<i class="material-icons mic" :data-icon="icon"></i>{{title}}<i class="material-icons marr" data-icon="keyboard_arrow_down"></i>
+			</div>
+			<div class="mcontent">
+				<div v-scope="MenuItem(item)" v-for="item in items"></div>
+			</div>
+		</div>
+	</template>
+	<template id="Tab">
+		<a @click="tabClick" :data-id="item.id" class="mdl-layout__tab" :class="{'is-active': app.selectedCategory == item.id}" :href="app.prefix + app.selectedDir + '/cat/' + item.id">{{item.tab}}</a>
+	</template>
+	<template id="TabGroup">
+		<span v-scope="Tab(item)" v-for="item in app.tabs"></span>
+	</template>
+	<template id="TabContent">
+		<ul class="page-content mdl-list">
+			<li v-scope="DynamicTabContentPage({category})" v-if="app.displayMode == D_MODES.AdvancedPagination"></li>
+			<div v-else>
+				<li v-scope="TabContentPage({page: page-1, category})" v-for="page in pages" :class="{hidden: isHidden(page)}"></li>
+			</div>
+			<div v-scope="Pagination({totalPages: pages})" class="paginator" v-if="app.displayMode >= D_MODES.Pagination && isVisible(catId)"></div>
+		</ul>
+	</template>
+	<template id="TabContentPage">
+		<a class="mdl-list__item" v-for="appItem in apps" :href="app.prefix + app.selectedDir + '/' + appItem[0]">
+			<span class="mdl-list__item-primary-content">
+				<img class="mdl-list__item-icon appic" src="10.png">
+				<span class="mdl-list__item-text-body">{{appItem[1]}}</span>
+			</span>
+			<span class="mdl-list__item-secondary-content">
+				<i class="material-icons" :data-icon="appItem[2] ? 'flag' : 'info'"></i>
+			</span>
+		</a>
+	</template>
+	<template id="Pagination">
+		<div class="pagination-container">
+			<button @click="prevPage" class="mdl-button mdl-js-button page-item prev-page-button" :class="{hidden: currentPage == 1}">&lt;</button>
+			<button @click="nextPage" class="mdl-button mdl-js-button page-item next-page-button" :class="{hidden: currentPage == totalPages}">&gt;</button>
+			<br>
+			<button @click="firstPage" class="mdl-button mdl-js-button page-item first-page-button" v-show="pagesLR.leftPage > 1">&lt;&lt;</button>
+			<button @click="toPage" class="mdl-button mdl-js-button page-item main-page-button" v-for="pageNumber in range" :class="{active: displayPage == currentPage}" :data-page="displayPage">
+				{{displayPage}}
+			</button>
+			<button @click="lastPage" class="mdl-button mdl-js-button page-item last-page-button" v-show="pagesLR.rightPage < totalPages">&gt;&gt;</button>
+		</div>
+	</template>
+	<template id="CustomContentFragment">
+		<div v-if="app.selectedDir == 'favourites'" v-scope="Favourites()"></div>
+		<div v-if="app.selectedDir == 'blog'" class="blog" v-scope="Blog()" @mounted="mounted"></div>
+		<div v-if="app.selectedDir == 'comments'" v-scope="Discussion()" @mounted="mounted"></div>
+		<div v-if="app.selectedDir == 'mirrors'" v-html="locale.mirrormenu"></div>
+	</template>
+	<template id="Blog">
+		<div v-for="post in posts">
+			<div class="mdl-grid blogpost" :class="{bpopened: app.selectedId == post.id, hiddenpost: app.selectedId && app.selectedId != post.id}">
+				<div class="mdl-card--expand mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+					<a class="mdl-card__title" :style="{background: 'url(' + post.bgpic + ')'}" :href="app.prefix + 'blog/' + post.id">
+						<h2 class="mdl-card__title-text">{{post.title}}</h2>
+					</a>
+					<div class="mdl-card__supporting-text">
+						{{post.desc}}
+						<span class="mdl-chip"><span class="mdl-chip__text">{{post.date}}</span></span>
+					</div>
+					<div class="mdl-card__menu">
+						<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" onclick="toggleBlogPost(${post.id})"><i class="material-icons" data-icon="keyboard_arrow_right"></i></button>
+					</div>
+				<div class="mdl-card__actions mdl-card--border" v-html="post.longtext"></div>
+				</div>
+			</div>
+		</div>
+	</template>
+	<template id="Discussion">
+		<div id="vkcomments"></div>
+		<div><a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a></div>
+	</template>
+	<template id="Favourites">
+		<a class="mdl-list__item" :href="app.prefix + item.dir + '/' + item.id" v-for="item in items">
+			<span class="mdl-list__item-primary-content">
+				<span class="mdl-list__item-text-body">{{item.name}}</span>
+			</span>
+			<span class="mdl-list__item-secondary-content">
+				<i class="material-icons" data-icon="star"></i>
+			</span>
+		</a>
+	</template>
+	<template id="AppPage">
+		<div id="thebox" class="box" v-if="item">
+			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+				<header class="mdl-layout__header">
+					<img class="mdl-layout-icon" src="10.png">
+				    <div class="mdl-layout__header-row" id="appTop">
+				    	<span class="mdl-layout-title marquee" id="titleOverlay"><span>{{item.name}}</span>
+				        	<i class="material-icons" data-icon="3d_rotation" v-show="item.sBT"></i>
+							<i class="material-icons" data-icon="bluetooth" v-show="item.s3D"></i></span>
+				    	<div class="mdl-layout-spacer"></div>
+				        <nav class="mdl-navigation">
+				        	<i class="material-icons mdl-navigation__link" :data-icon="starIcon" id="fvicon" @click="updateFavStatus(item.name)"></i>
+				        	<i class="material-icons mdl-navigation__link" data-icon="cloud_upload" @click="toggleSourceSpoiler"></i>
+				        </nav>
+				    </div>
+				    <div class="mdl-layout__header-row mdl-grid" v-show="sourceSpoilerOpen">
+				    	<a :href="getLink()" target="_blank" class="mdl-cell  ai">
+							<i class="material-icons" data-icon="public"></i>
+							<span tabindex="0">{{locale.src}}</span>
+						</a>
+				    	<a :href="'https://web.archive.org/' + getLink()" target="_blank" class="mdl-cell ai">
+							<i class="material-icons" data-icon="archive"></i>
+							<span tabindex="0">W/A</span>
+						</a>
+				    </div>
+				    <div class="mdl-layout__header-row mdl-grid">
+						<div class="mdl-cell ai" id="appViews">
+							<i class="material-icons" data-icon="remove_red_eye"></i>
+							<span>{{item.vie}}</span>
+						</div>
+						<a href="#dls" class="mdl-cell ai" id="appDls">
+							<i class="material-icons" data-icon="file_download"></i>
+							<span>{{item.dwn}}</span>
+						</a>
+						<a href="#" class="mdl-cell ai" id="appComments">
+							<i class="material-icons" data-icon="comment"></i>
+				    		<span>{{item.cmm}}</span>
+						</a>
+				    </div>
+				    <div id="p1" ref="p1" class="mdl-progress mdl-js-progress"></div>
+				    <div id ="appRating" class="mdl-tooltip" data-mdl-for="p1">{{item.rating.rtg}}</div>
+				</header>
+				<p id="appDesc" v-html="item.desc"></p>
+				<div>
+					<div class="mdl-grid">
+						<div class="mdl-cell mdl-cell--4-col ai" id="appBy">
+							<i class="material-icons" data-icon="person_pin"></i>
+							<span>{{item.upl}}</span>
+						</div>
+						<div class="mdl-cell mdl-cell--4-col ai" id="appVendor">
+							<i class="material-icons" data-icon="work"></i>
+							<span>{{item.vnd}}</span>
+						</div>
+						<div class="mdl-cell mdl-cell--4-col ai" id="appCat">
+							<i class="material-icons" data-icon="label"></i>
+							<span>{{item.cat}}</span>
+						</div>
+					</div>
+					<div class="mdl-grid">
+						<div class="mdl-cell mdl-cell--5-col ai" id="appDate">
+							<i class="material-icons" data-icon="file_upload"></i>
+						   	<span>{{item.add}}</span>
+						</div>
+						<div class="mdl-cell mdl-cell--5-col ai" id="appUpdate" v-if="item.upd">
+							<i class="material-icons" data-icon="update"></i>
+						  	<span>{{item.upd}}</span>
+						</div>
+					</div>
+				</div>
+				<span id="tooltips">
+					<div class="mdl-tooltip" :data-mdl-for="name" v-for="(tooltip, name) in locale.tooltips">{{tooltip}}</div>
+				</span>
+				<hr>
+				<div id="related" v-if="app.related">
+					<div class="mdl-list__item" v-for="rel in app.related">
+						<a :href="app.prefix + app.selectedDir + '/' + rel">{{getRelatedAppName(rel)}}</a>
+					</div>
+				</div>
+				<div id="dls" v-if="item.files">
+					<div v-for="group in item.files">
+						<span v-html="group.text"></span>
+						<div class="mdl-grid">
+							<a :href="link.url" rel="noreferrer"
+								v-for="(link, index) in group.links" class="mdl-cell mdl-cell--5-col ai" :class="{red: link.not_renamed}"
+								:target="link.target" :id="link.id">
+								<i class="material-icons" data-icon="file_download"></i>{{link.type}}
+								<div class="mdl-tooltip mdl-tooltip--top" :data-mdl-for="link.id">{{link.file}}<br>{{link.size}}</div>
+							</a>
+							<span @click="archiveHelperFunction(event, group.links[0].file)" class="mdl-cell mdl-cell--5-col ai">
+								<i class="material-icons">archive</i>ArchiveHelper
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a v-if="item" class="boxbg" :href="app.prefix + app.selectedDir"></a>
+	</template>
+	<template id="QuickSettingsWindow">
+		<div id="about" class="box">
+			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+				<header class="mdl-layout__header">
+					<i class="material-icons mdl-layout-icon" data-icon="settings"></i>
+					<div class="mdl-layout__header-row">
+						<span class="mdl-layout-title"><span id="ab1">{{locale.about}}</span></span>
+						<span id="ab2" onclick="switchLang()">{{locale.l}}</span>
+					</div>
+				</header>
+				<div class="mdl-grid">
+					<div class="mdl-cell mdl-cell--12-col" style="text-align:justify">
+						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="videogame_asset"></i></div>
+						<div v-html="locale.about2"></div>
+						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="wifi"></i></div>
+						<div>{{locale.traffic}}</div>
+						<div id="config" class="mdl-grid" style="text-align:center">
+							<div class="mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet">
+								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cicons">
+									<input type="checkbox" id="cicons" class="mdl-switch__input" checked>
+									<span class="mdl-switch__label" v-html="locale.icons"></span>
+								</label>
+							</div>
+							<div class=" mdl-cell mdl-cell--4-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
+								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cscreenshots">
+									<input type="checkbox" id="cscreenshots" class="mdl-switch__input" checked>
+									<span class="mdl-switch__label">{{locale.screenshots}}</span>
+								</label>
+							</div>
+							<div style="margin-top:60px"></div>
+							<div class="mdl-grid">
+								<div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons" data-icon="sort_by_alpha"></i></div>
+							</div>
+							<div class=" mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet">
+								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cazsort">
+									<input type="checkbox" id="cazsort" class="mdl-switch__input">
+									<span class="mdl-switch__label">{{locale.alphasort}}</span>
+								</label><br><br>
+								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="carchelper">
+									<input type="checkbox" id="carchelper" class="mdl-switch__input">
+									<span class="mdl-switch__label">{{locale.archivehelper}}</span>
+								</label><br><br>
+								<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height">
+								 	<input type="text" value="" class="mdl-textfield__input" id="pmode" readonly>
+								 	<input type="hidden" value="" name="pmode">
+								 	<i class="mdl-icon-toggle__label material-icons" data-icon="keyboard_arrow_down"></i>
+								 	<label for="pmode" class="mdl-textfield__label">{{locale.listmode}}</label>
+								 	<ul for="pmode" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+									 	<li class="mdl-menu__item" data-val="-1">{{locale.pfullcv}}</li>
+									 	<li class="mdl-menu__item" data-val="0">{{locale.pfull}}</li>
+									 	<li class="mdl-menu__item" data-selected="true" data-val="1">{{locale.pload}}</li>
+									 	<li class="mdl-menu__item" data-val="2">{{locale.ppage}}</li>
+								 	</ul>
+								</div>
+							</div>
+						</div><br>
+						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
+							<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col" onclick="saveConfig()">
+								{{locale.save}}
+							</button><br>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a class="boxbg" :href="app.prefix + app.selectedDir"></a>
+	</template>
+	<script defer src="lang.js"></script>
+	<script defer src="router.js"></script>
+	<script defer src="tools/utils.js"></script>
+	<script defer src="tools/mirrors.js"></script>
+	<script defer src="tools/archelper.js"></script>
+	<script defer src="components/apppage.js"></script>
+	<script defer src="components/discussion.js"></script>
+	<script defer src="components/menu.js"></script>
+	<script defer src="components/tabs.js"></script>
+	<script defer src="components/paginator.js"></script>
+	<script defer src="components/blog.js"></script>
+	<script defer src="components/favourites.js"></script>
+	<script defer src="components/quicksettings.js"></script>
+	<script defer src="lib/petite-vue.iife.js"></script>
+	<script defer src="postinit.js"></script>
+	<script defer src="datasource.js"></script>
+	<script defer src="init.js"></script>
 </body>
 </html>

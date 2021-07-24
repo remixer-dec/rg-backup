@@ -41,11 +41,15 @@ var locales = {
             appUpdate: 'Updated',
         },
         folders: {
-            apps: 'Apps',
-            games: 'Games',
-            cgames: 'Chinese Games',
-            sapps: 'S-Apps',
-            sgames: 'S-Games',
+            J2ME: {
+                apps: 'Apps',
+                games: 'Games',
+                cgames: 'Chinese Games'
+            },
+            Symbian: {
+                sapps: 'S-Apps',
+                sgames: 'S-Games'
+            }
         },
         about: 'Settings',
         about2: 'This is a J2ME & Symbian app & game catalogue, created to preserve all the info about mobile apps and games from <a href="http://rugame.mobi">rugame.mobi</a>. This project does not include any game files. J2ME is registered trademark of Oracle. Symbian is registered trademark of Nokia',
@@ -78,7 +82,7 @@ var locales = {
         loadmore: 'show more',
         listmode: 'List rendering mode',
         pfull: 'full (for PC)',
-        pfullcv: 'full (+virtual render)', 
+        pfullcv: 'full (+virtual render)',
         pload: 'per-scroll loading',
         ppage: 'pagination',
         found: 'results:',
@@ -131,17 +135,22 @@ var locales = {
             appUpdate: 'Обновлено',
         },
         folders: {
-            apps: 'Приложения',
-            games: 'Игры',
-            cgames: 'China-игры',
-            sapps: 'S-приложения',
-            sgames: 'S-игры',
+            J2ME: {
+                apps: 'Приложения',
+                games: 'Игры',
+                cgames: 'China-игры'
+            },
+            Symbian: {
+                sapps: 'S-приложения',
+                sgames: 'S-игры'
+            }
         },
         about: 'Настройки',
         about2: 'Этот проект был разработан с целью архивирования данных обо всех доступных мобильных приложениях для старых платформ с сайта <a href="http://rugame.mobi">rugame.mobi</a>, на случай, если с ним что-то случится. Тем не менее, из публичного репозитория были вырезаны некоторые игры и категории. Данный проект не содержит самих приложений, а лишь предоставляет информационную базу о них. 	Разработчик не несет ответственности за все данные и файлы этого проекта. Авторские права на приложения принадлежат их разработчикам. Для работы с сервисом требуется современный браузер.',
         all: 'ВСЕ',
         top: 'ТОП',
         comments: 'Обсуждение',
+        blog: 'Блог',
         stats: 'Статистика',
         apps: 'мидлетов',
         files: 'файлов',
@@ -156,7 +165,7 @@ var locales = {
         arc1: '), он скорее всего, находится между частями ',
         arc2: '), он скорее всего, находится в части архива №',
         traffic: 'Сервис загружает много данных при каждой перезагрузке и может расходовать трафик. Если у вас ограничен трафик, не рекомендуется включать загрзуку графического контента. Отображение иконок также может замедлять сервис на слабых устройствах во время первичных загрузок.',
-        icons: 'иконки <br>(1-10мб)',
+        icons: 'иконки (1&#8209;10мб)',
         screenshots: 'скриншоты (6-36мб)',
         save: 'сохранить',
         cache: 'кэшировать',
@@ -169,7 +178,7 @@ var locales = {
         loadmore: 'показать ещё',
         listmode: 'Режим отображения списков',
         pfull: 'Полный (рек. только для ПК)',
-        pfullcv: 'Полный (+вирт. отрисовка)', 
+        pfullcv: 'Полный (+вирт. отрисовка)',
         pload: 'Подгружаемый',
         ppage: 'Постраничный',
         found: 'Всего найдено:',

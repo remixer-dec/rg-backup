@@ -2,6 +2,7 @@ let tabHTML = panelHTML = tooltipHTML = ''
 let isBlogLoaded = false
 let blogPosts = []
 
+/*
 function addTab(type, id, name, hidden) {
     hidden = hidden ? ' hidden' : ''
     let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${type}_${id}" href="#${type}_${id}"> ${name} </a>`
@@ -29,18 +30,19 @@ function addTabs() {
     addTab('t', '-5', 'mirrors', true)
     return tabHTML
 }
-
+*/
+/*
 function addTooltips() {
     for (let tt in locale.tooltips) {
         tooltipHTML += `<div class="mdl-tooltip" data-mdl-for="${tt}">${locale.tooltips[tt]}</div>`
     }
     return tooltipHTML
 }
-
+*/
 function relocate(hash) {
     document.location.hash = hash
 }
-
+/*
 function parseHash(url) {
     if (url.startsWith('#')) {
         url = window.location.origin + '/' + url
@@ -98,12 +100,13 @@ function parseHash(url) {
         return false
     }
 }
-
-function locate(url) {
+*/
+function locate(url) {/*
     let r = parseHash(url)
     if (r && r != 'custom' && r.length > 1) {
         getAppInfo(r[1], r[0])
     }
+    */
 }
 
 function hashHandler(e) {
@@ -131,19 +134,20 @@ function initialize() {
         return addElement(style)
     }
     document.getElementsByTagName('html')[0].lang = locale.l
-    window.alltabs.innerHTML += addTabs()
-    window.tooltips.innerHTML += addTooltips()
-    window.lists.innerHTML += panelHTML
-    window.addEventListener('hashchange', hashHandler)
+
+    //window.tooltips.innerHTML += addTooltips()
+    window.loadScript = loadScript
+    //window.lists.innerHTML += panelHTML
+    //window.addEventListener('hashchange', hashHandler)
     loadScript('lib/material.min.js').then(() => {
-        let items = [loadStyle('lib/material.light_green-blue.min.css'), loadStyle('style.min.css')]
+        let items = [loadStyle('css/material.light_green-blue.min.css'), loadStyle('css/style.min.css')]
         if (typeof fetch != 'function') {
             items.push(loadScript('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js'))
         }
         Promise.all(items).then(() => {
             loadScript('main.js')
         })
-        loadScript('https://vk.com/js/api/openapi.js?121')
+        //loadScript('https://vk.com/js/api/openapi.js?121')
     })
 }
 
