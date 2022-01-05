@@ -5,6 +5,7 @@ class DataSource {
 }
 
 class V2DataSource extends DataSource {
+    contentDirs = ['apps', 'games', 'cgames', 'sapps', 'sgames']
     constructor() {
         super()
         this.host = 'http://127.0.0.1:8081/'
@@ -15,6 +16,10 @@ class V2DataSource extends DataSource {
     async getAppInfo(dir, id) {
         let data = await fetchJSON(this.host + dir + '/data/all/' + id + '.json')
         let mirror = localStorage['lmirror']
+        if (!data) {
+            alert(locale.nodata)
+            return false
+        }
         if (!data.files) return data
         for (let i = 0, id = 0, l = data.files.length, none = '_self', blank = '_blank'; i<l; i++) {
             for (let y=0, links=data.files[i].links, l2=links.length; y<l2; y++, id++) {
@@ -34,10 +39,15 @@ class DataSourceManager {
         this.ds = new SelectedDataSource()
     }
     async loadMetadata() {
+        if (this.ds.contentDirs.indexOf(app.selectedDir) === -1) return
+        app.loading = true
         let sel = app.selectedDir
         let meta = await this.ds.getMetadata(sel)
-        app.meta[sel] = meta
+        app.meta[sel] = meta       
         app.meta[sel]['all'] = this.combineAllCategories(sel)
+        if (!app.sortedMeta[app.selectedDir]) {
+            this.sortByAlpha()
+        }
         return meta
     }
     async loadAppInfo() {
@@ -59,18 +69,16 @@ class DataSourceManager {
         return all
     }
     swapSorted() {
-        if (!app.sortedMeta[app.selectedDir]) {
-            this.sortByAlpha()
-        }
         app.useEmptyMeta = true
         app.toggleSort()
     }
-    sortByAlpha() {
+    async sortByAlpha() {
         let clone = JSON.parse(JSON.stringify(app.meta[app.selectedDir]))
         for (let cat in clone) {
             if (cat != 0) clone[cat].sort(alphasorter)
         }
         app.sortedMeta[app.selectedDir] = clone
+        app.loading = false
     }
 }
 

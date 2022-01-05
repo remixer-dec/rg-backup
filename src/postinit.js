@@ -3,10 +3,10 @@ const V = PetiteVue
 const D_MODES = {Full: 0, Onscroll: 1, Pagination: 2, AdvancedPagination: 3}
 
 let app = {
-    displayMode: D_MODES.AdvancedPagination,
     selectedDir: 'apps',
     selectedCategory: 'all',
     selectedId: '',
+    loading: true,
     selectedPage: 1,
     selectedApp: false,
     prefix: '#/',
@@ -15,6 +15,9 @@ let app = {
     alphasort: false,
     useEmptyMeta: false,
     ui: '',
+    config: new Config({
+        displaymode: D_MODES.AdvancedPagination
+    }),
     get tabs() {
         let tabList = locale.tabs[this.selectedDir]
         if (!tabList) return locale.tabs['apps']
@@ -44,3 +47,9 @@ let app = {
 app = V.reactive(app)
 Router.initialize()
 V.createApp({}).mount()
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        app.loading = false
+        document.getElementsByClassName('container')[0].style.display = 'block'
+    }, 300)
+})

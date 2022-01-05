@@ -1,10 +1,3 @@
-/*function addTab(type, id, name, hidden) {
-    hidden = hidden ? ' hidden' : ''
-    let tab = `<a class="${type}-tab mdl-layout__tab${hidden}" id="tab_${type}_${id}" href="#${type}_${id}"> ${name} </a>`
-    let panel = `<section class="mdl-layout__tab-panel" id="${type}_${id}"><ul class="page-content mdl-list"></ul></section>`
-    panelHTML += panel + '\n'
-    tabHTML += tab + '\n'
-}*/
 function Tab(props) {
   return {
     $template: '#Tab',
@@ -12,7 +5,6 @@ function Tab(props) {
     name: props.id,
     icon: props.name,
     tabClick(e) {
-        app.selectedId = e.target.getAttribute('data-id')
         app.selectedPage = 1
         e.stopImmediatePropagation()
     }
@@ -29,8 +21,10 @@ function TabContent(props) {
   return {
     pages: Math.ceil(props.category.length/20),
     $template: '#TabContent',
+    dir: props.dir,
     isVisible(id) {
-        return app.selectedCategory == id
+      if (app.selectedCategory == id)
+        return app.selectedCategory == id // && app.selectedDir === props.dir
     },
     loadOnScroll(e) {
         if (app.displayMode != D_MODES.Onscroll) return

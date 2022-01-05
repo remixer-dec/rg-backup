@@ -13,7 +13,15 @@ function AppPage(props) {
             this.starIterator++
         },
         async load() {
-            await app.datasource.loadAppInfo()
+            try {
+                await app.datasource.loadAppInfo()
+            } catch(e) {
+                console.error(e)
+                return
+            } 
+            if (!app.selectedApp) {
+                return
+            }
             app.selectedApp.desc = this.transformDescription(app.selectedApp.desc)
             this.item = app.selectedApp
             let rtg = this.item.rating.rtg.split('/')

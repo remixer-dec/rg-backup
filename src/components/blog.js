@@ -20,7 +20,7 @@ function Blog(props) {
                         '<div><button class="mdl-button mdl-js-button mdl-button--colored mdl-js-ripple-effect" onclick="this.parentElement.lastChild.classList.toggle(\'hidden\')">$1</button><div class="hidden">$2</div></div>'
                     )
                 }
-                this.posts = blogPosts.reverse()
+                this.posts = blogPosts
             })
         },
         mounted() {
