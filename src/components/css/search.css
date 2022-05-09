@@ -1,0 +1,45 @@
+#quickresults {
+  position: absolute;
+  z-index: 40;
+  background: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  right: 0;
+  min-width: 150px;
+  top: 60px;
+}
+#quickresults a {
+  color: #555 !important;
+  text-decoration: none;
+  padding: 6px 24px;
+  display: block;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: left;
+  text-rendering: optimizespeed;
+}
+#quickresults a:hover {
+  background: #eee;
+  border-radius: 10px;
+}
+#quickresults a#totalr {
+  color: #bbb !important;
+}
+div#searchbar {
+  transform: translateY(-6px);
+}
+#fullsearch {
+  min-width: 100px;
+}
+#quickresults .mdl-list__item-icon {
+  position: absolute;
+  left: 0;
+  transform: scale(0.8);
+  height: 20px;
+  width: 20px;
+  margin-left: 2px;
+}
+.material-icons.topright {
+  top: 6px;
+  font-size: 22px;
+  position: relative;
+}

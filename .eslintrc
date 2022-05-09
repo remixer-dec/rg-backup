@@ -1,0 +1,36 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": [
+    "standard"
+  ],
+  "parserOptions": {
+    "sourceType": "module",
+    "requireConfigFile": false
+  },
+  "ignorePatterns": [
+    "*.min.js",
+    "dist/*",
+    "node_modules/**/*.js"
+  ],
+  "globals": {
+    "app": true,
+    "locale": true,
+    "componentHandler": true,
+    "getmdlSelect": true,
+    "ComlinkWorker": true,
+    "APPNAME": true,
+    "VERSION": true,
+    "PRODUCTION": true
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "semi": ["error", "never"],
+    "no-labels": ["error", {"allowLoop": true}],
+    "object-curly-spacing": ["error", "never"],
+    "space-before-function-paren": ["error", "never"],
+    "no-useless-constructor": "off"
+  }
+}

@@ -1,0 +1,127 @@
+.blog .mdl-card {
+  min-height: 100px;
+}
+.mdl-card__supporting-text {
+  width: auto;
+}
+.blog .mdl-card__title {
+  color: #fff;
+  cursor: pointer;
+}
+.blogpost {
+  position: relative;
+  top: 0;
+  transition: all 1s;
+  right: 0;
+  text-align: justify;
+}
+.blogpost.bpopened {
+  top: -60px;
+  margin-top: 40px;
+}
+.blogpost .mdl-card__actions {
+  transition: all 1s;
+  max-height: 0;
+  color: #fff;
+  position: relative;
+  background: #fff;
+  padding: 0;
+  top: 0;
+}
+.bpopened .mdl-card__actions {
+  display: block;
+  max-height: 40000px;
+  top: -52px;
+  color: #444;
+  padding: 10px;
+}
+.mdl-card__menu i {
+  transition: 1s all;
+  transform: rotate(0);
+  color: #fff;
+}
+.bpopened .mdl-card__menu i {
+  transform: rotate(90deg) translateX(-50%) translateY(50%);
+}
+.blogpost.hiddenpost {
+  max-height: 0;
+  padding: 1px;
+  position: absolute;
+  right: -200%;
+}
+.blogpost .mdl-card__title {
+  text-decoration: none;
+  transition: background-position-y 1.4s;
+  text-shadow: 2px 2px rgba(0, 0, 0, 0.7);
+}
+.bpopened .mdl-card__title {
+  background-position-y: 70% !important;
+}
+.bpopened a i {
+  font-size: 14px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+.blogpost button {
+  white-space: normal;
+  height: auto;
+  text-align: left;
+}
+.blogpost img {
+  max-width: 100%;
+}
+.blog {
+  background: #e0ffeb;
+  height: 100%;
+  overflow-y: auto;
+}
+.blog .mdl-card__title {
+  background-blend-mode: color-burn;
+  background-color: var(--primary-color) !important;
+}
+.blog .close {
+  color: white;
+  position: absolute;
+  right: 6px;
+  font-size: 22px;
+  text-decoration: none;
+}
+.blog {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: baseline;
+}
+.blog > div {
+  max-width: 50%;
+  transition: all 0.2s ease;
+}
+.blog.postpage > div {
+  max-width: 100%;
+}
+.blog button > i {
+  font-size: unset;
+}
+.blog .mdl-card__title-text {
+    max-width: 92%;
+}
+.blog .mdl-card {
+    border-radius: 10px;
+}
+.blog .mdl-chip {
+    padding: 0 4px;
+}
+.bpopened .mdl-card__supporting-text {
+  height: 20px;
+}
+.blogpost button {
+  display: block;
+}
+@media only screen and (max-width: 600px) {
+  .blog > div {
+    max-width: 100%;
+  }
+  .blogpost .mdl-card__title-text {
+    text-align: left;
+  }
+}

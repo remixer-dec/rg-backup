@@ -1,0 +1,16 @@
+<div class="mdl-cell mdl-cell--12-col"> 
+  <div class="mdl-textfield mdl-js-textfield mdl-cell--3-col mdl-cell--12-col-phone">
+    <input class="mdl-textfield__input" type="text" id="longsearch" @keyup.enter="query=event.target.value;search()" @change="query=event.target.value" :value="query">
+    <label class="mdl-textfield__label" for="longsearch">{{locale.search.name}}</label>
+  </div>
+  <span v-scope="Select({label: locale.search.catalogue, itemsArr: Object.keys(locale.folders), topItem: {value: 'any', text: locale.search.any}, selected: 'any', onchange: (v) => {searchSection = v; updateDirs()}, cssclass: 'mdl-cell--12-col-phone'})" @vue:mounted="mounted"></span>
+  <span v-if="showUpdated %2 == 0 && searchSection != 'any'" v-scope="Select({id:'dir', label: locale.search.type, items: dirs, topItem: {value: 'any', text: locale.search.any}, selected: searchDir,  onchange: (v) => {searchDir = v; updateCategories()}, cssclass: 'mdl-cell--12-col-phone'})" @vue:mounted="mounted"></span>
+  <span v-if="showUpdated %2 == 0 && searchSection != 'any' && searchDir != 'any'" v-scope="Select({label: locale.search.category, items: categories, topItem: {value: 'any', text: locale.search.anyF}, selected: searchCategory, onchange: (v) => {searchCategory = v}, cssclass:'mdl-cell--12-col-phone'})" @vue:mounted="mounted"></span>
+  <button id="fullsearch" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--1-col mdl-cell--12-col-phone" @click="search()">
+    {{locale.search.find}}
+  </button>
+  <div v-if="results.length == 0 && searches > 0" class="centered">{{locale.search.notfound}}</div>
+</div>
+<div class="mdl-cell mdl-cell--12-col">
+  <div v-if="results.length > 0" v-scope="TabContent({catId: 'search', items: results, dir: false, nonScrollable: true})"></div>
+</div>

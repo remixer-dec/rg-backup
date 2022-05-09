@@ -1,0 +1,10 @@
+<a class="mdl-list__item" :href="app.prefix + item.dir + '/' + item.id + '/info'" v-for="item in items">
+  <span class="mdl-list__item-primary-content">
+    <img class="mdl-list__item-icon appic" :class="{'default-icon': !app.config.icons}" :src="app.datasource.icons.getIcon(item.id, item.dir)">
+    <span class="mdl-list__item-text-body">{{item.name}}</span>
+  </span>
+  <span class="mdl-list__item-secondary-content">
+    <i class="material-icons" data-icon="star"></i>
+  </span>
+</a>
+<b v-if="items.length == 0"><span class="mdl-layout-title centered">¯\_(ツ)_/¯</span></b>

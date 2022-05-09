@@ -1,0 +1,22 @@
+<div v-for="post in posts">
+  <div class="mdl-grid blogpost" :class="{bpopened: app.selectedId == post.id, hiddenpost: app.selectedId && app.selectedId != post.id}">
+    <div class="mdl-card--expand mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+      <a class="mdl-card__title" :style="{background: 'url(' + post.bgpic + ') #999'}" :href="app.prefix + 'blog/' + post.id">
+        <h2 class="mdl-card__title-text">{{post.title}}</h2>
+      </a>
+      <div class="mdl-card__supporting-text">
+        {{post.desc}}
+        <span class="mdl-chip"><span class="mdl-chip__text">{{post.date}}</span></span>
+      </div>
+      <div class="mdl-card__menu">
+        <a :href="app.prefix + 'blog/' + (app.selectedId ? '' : post.id)">
+          <button class="mdl-button mdl-button--icon mdl-js-button">
+            &#8203;
+            <i class="material-icons" data-icon="keyboard_arrow_right"></i>
+          </button>
+        </a>
+      </div>
+    <div class="mdl-card__actions mdl-card--border" v-html="post.longtext"></div>
+    </div>
+  </div>
+</div>

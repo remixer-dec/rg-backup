@@ -1,0 +1,58 @@
+<div id="about" class="box">
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <i class="material-icons mdl-layout-icon" data-icon="settings"></i>
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title"><span id="ab1">{{locale.about}}</span></span>
+        <span id="lang-switch" class="mdl-icon-toggle__label" :data-lang="locale.l.toUpperCase()">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height">
+            <input type="text" value="" class="mdl-textfield__input" readonly id="lang">
+            <input type="hidden" value="" name="lang" id="langVal" data-type="string">
+            <ul for="lang" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+              <li class="mdl-menu__item" :data-val="item" v-scope v-for="item in locale.languages" @click="switchLang(item)">{{item.toUpperCase()}}</li>
+            </ul>
+          </div>
+        </span>
+      </div>
+    </header>
+    <div class="mdl-grid">
+      <div class="mdl-cell mdl-cell--12-col" style="text-align:justify">
+        <div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="videogame_asset"></i></div>
+        <div v-html="locale.about2"></div>
+        <div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="wifi"></i></div>
+        <div>{{locale.traffic}}</div>
+        <div id="config" class="mdl-grid" style="text-align:center">
+          <div class="mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cicons">
+              <input type="checkbox" id="cicons" class="mdl-switch__input" :checked="app.config.icons">
+              <span class="mdl-switch__label" v-html="locale.icons"></span>
+            </label>
+          </div>
+          <div class=" mdl-cell mdl-cell--4-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cscreenshots">
+              <input type="checkbox" id="cscreenshots" class="mdl-switch__input" :checked="app.config.screenshots">
+              <span class="mdl-switch__label">{{locale.screenshots}}</span>
+            </label>
+          </div>
+          <div style="margin-top:60px"></div>
+          <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons" data-icon="archive"></i></div>
+          </div>
+          <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="carchelper">
+              <input type="checkbox" id="carchelper" class="mdl-switch__input" :checked="app.config.archelper">
+              <span class="mdl-switch__label">{{locale.archivehelper}}</span>
+            </label><br><br>
+            <div v-scope="Select({icon: 'keyboard_arrow_down', id: 'pmode', dataType: 'number', items: pModeSelection, label: locale.listmode, selected: app.config.displaymode, hiddenId: 'cdisplaymode'})" @vue:mounted="mounted"></div>
+          </div>
+        </div><br>
+        <div class="mdl-cell mdl-cell--12-col" style="text-align:center">
+          <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col" @click="saveConfig()">
+            {{locale.save}}
+          </button><br>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<a class="boxbg" :href="app.prefix + app.selectedDir"></a>

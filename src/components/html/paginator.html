@@ -1,0 +1,10 @@
+<div class="pagination-container">
+  <button @click="prevPage" class="mdl-button mdl-js-button page-item prev-page-button" :class="{hidden: currentPage == 1}">&lt;</button>
+  <button @click="nextPage" class="mdl-button mdl-js-button page-item next-page-button" :class="{hidden: currentPage == totalPages}">&gt;</button>
+  <br>
+  <button @click="firstPage" class="mdl-button mdl-js-button page-item first-page-button" v-show="pagesLR.leftPage > 1">&lt;&lt;</button>
+  <button @click="toPage" class="mdl-button mdl-js-button page-item main-page-button" v-for="pageNumber in range" :class="{active: displayPage == currentPage}" :data-page="displayPage">
+    {{displayPage}}
+  </button>
+  <button @click="lastPage" class="mdl-button mdl-js-button page-item last-page-button" v-show="pagesLR.rightPage < totalPages">&gt;&gt;</button>
+</div>

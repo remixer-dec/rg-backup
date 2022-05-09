@@ -1,17 +1,17 @@
-class Config {
-  constructor (defaultConfig) {
+export default class Config {
+  constructor(defaultConfig) {
     this.config = this.#loadConfig(defaultConfig)
     return new Proxy(this, {
-        get: (target, prop) => this.#getConfig(prop),
-        set: (target, prop, value) => this.#setConfig(prop, value)
+      get: (target, prop) => this.#getConfig(prop),
+      set: (target, prop, value) => this.#setConfig(prop, value)
     })
   }
 
   #loadConfig(config) {
     for (const key in localStorage) {
-        if (key.startsWith('rg')) {
-            config[key.slice(3)] = localStorage[key] === "false" ? false : localStorage[key]
-        }
+      if (key.startsWith('rg')) {
+        config[key.slice(3)] = localStorage[key] === 'false' ? false : localStorage[key]
+      }
     }
     return config
   }
@@ -23,6 +23,6 @@ class Config {
   }
 
   #getConfig(name) {
-    return this.config[name] 
-  }    
+    return this.config[name]
+  }
 }

@@ -1,0 +1,97 @@
+<div id="thebox" class="box" v-if="item">
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <img class="mdl-layout-icon" :class="{'default-icon': !app.config.icons}" :src="app.datasource.icons.getIcon(id, dir)">
+        <div class="mdl-layout__header-row" id="appTop">
+          <span class="mdl-layout-title marquee" id="titleOverlay"><span>{{item.name}}</span>
+              <i class="material-icons" data-icon="3d_rotation" v-show="item.s3D"></i>
+          <i class="material-icons" data-icon="bluetooth" v-show="item.sBT"></i></span>
+          <div class="mdl-layout-spacer"></div>
+            <nav class="mdl-navigation">
+              <i class="material-icons mdl-navigation__link" :data-icon="starIcon" id="fvicon" @click="updateFavStatus(item.name)"></i>
+              <i class="material-icons mdl-navigation__link" data-icon="cloud_upload" id="srcicon" @click="toggleSourceSpoiler"></i>
+            </nav>
+        </div>
+        <div class="mdl-layout__header-row mdl-grid" v-show="sourceSpoilerOpen">
+          <a :href="getLink()" target="_blank" class="mdl-cell  ai">
+          <i class="material-icons" data-icon="public"></i>
+          <span tabindex="0">{{locale.src}}</span>
+        </a>
+          <a :href="'https://web.archive.org/' + getLink()" target="_blank" class="mdl-cell ai">
+          <i class="material-icons" data-icon="archive"></i>
+          <span tabindex="0">WebArchive</span>
+        </a>
+        </div>
+        <div class="mdl-layout__header-row mdl-grid">
+        <div class="mdl-cell ai" id="appViews">
+          <i class="material-icons" data-icon="remove_red_eye"></i>
+          <span>{{item.vie || '?'}}</span>
+        </div>
+        <a href="#dls" class="mdl-cell ai" id="appDls">
+          <i class="material-icons" data-icon="file_download"></i>
+          <span>{{item.dwn}}</span>
+        </a>
+        <a href="#" class="mdl-cell ai" id="appComments">
+          <i class="material-icons" data-icon="comment"></i>
+            <span>{{item.cmm}}</span>
+        </a>
+        </div>
+        <div id="p1" ref="p1" class="mdl-progress mdl-js-progress"></div>
+        <div id ="appRating" class="mdl-tooltip" data-mdl-for="p1">{{item.rating.rtg}}</div>
+    </header>
+    <center><img :src='screenshot' v-if="screenshot"></center>
+    <p id="appDesc" v-html="item.desc"></p>
+    <div>
+      <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col ai" id="appBy">
+          <i class="material-icons" data-icon="person_pin"></i>
+          <span>{{item.upl}}</span>
+        </div>
+        <div class="mdl-cell mdl-cell--4-col ai" id="appVendor">
+          <i class="material-icons" data-icon="work"></i>
+          <span>{{item.vnd}}</span>
+        </div>
+        <div class="mdl-cell mdl-cell--4-col ai" id="appCat">
+          <i class="material-icons" data-icon="label"></i>
+          <span>{{item.cat}}</span>
+        </div>
+      </div>
+      <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--5-col ai" id="appDate">
+          <i class="material-icons" data-icon="file_upload"></i>
+              <span>{{item.add}}</span>
+        </div>
+        <div class="mdl-cell mdl-cell--5-col ai" id="appUpdate" v-if="item.upd">
+          <i class="material-icons" data-icon="update"></i>
+            <span>{{item.upd}}</span>
+        </div>
+      </div>
+    </div>
+    <span id="tooltips">
+      <div class="mdl-tooltip" :data-mdl-for="name" v-for="(tooltip, name) in locale.tooltips">{{tooltip}}</div>
+    </span>
+    <hr>
+    <div id="related" v-if="app.related">
+      <div class="mdl-list__item" v-for="rel in app.related">
+        <a :href="app.prefix + dir + '/' + rel">{{getRelatedAppName(rel)}}</a>
+      </div>
+    </div>
+    <div id="dls" v-if="item.files">
+      <div v-for="group in item.files">
+        <span v-html="group.text"></span>
+        <div class="mdl-grid">
+          <a :href="link.url" rel="noreferrer"
+            v-for="(link, index) in group.links" class="mdl-cell mdl-cell--5-col ai" :class="{red: link.not_renamed}"
+            :target="link.target" :id="link.id">
+            <i class="material-icons" data-icon="file_download"></i>{{link.type}}
+            <div class="mdl-tooltip mdl-tooltip--top" :data-mdl-for="link.id">{{link.file}}<br>{{link.size}}</div>
+          </a>
+          <span v-if="app.config.archelper" @click="archiveHelperFunction(event, group.links[0].file)" class="mdl-cell mdl-cell--5-col ai">
+            <i class="material-icons" data-icon="archive"></i>ArchiveHelper
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<a v-if="item" class="boxbg" :href="app.prefix + app.selectedDir"></a>

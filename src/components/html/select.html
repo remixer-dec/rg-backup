@@ -1,0 +1,10 @@
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height" :class="id + ' ' + cssclass">
+  <input type="text" value="" class="mdl-textfield__input"  readonly :id="id" @change="changed">
+  <input type="hidden" value="" :name="id" :id="hiddenId" :data-type="dataType">
+  <i class="mdl-icon-toggle__label material-icons" :data-icon="icon" v-if="icon"></i>
+  <label :for="id" class="mdl-textfield__label">{{label}}</label>
+  <ul :for="id" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+    <li class="mdl-menu__item" :data-val="topItem.value" v-if="topItem">{{topItem.text}}</li>
+    <li class="mdl-menu__item" :data-val="item.value" v-for="item in items">{{item.text}}</li>
+  </ul>
+</div>

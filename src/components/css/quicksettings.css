@@ -1,0 +1,33 @@
+#lang-switch {
+  position: absolute;
+  display: block;
+  right: 10px;
+  cursor: pointer;
+  padding: 4px;
+}
+#lang-switch:hover {
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+}
+#lang-switch > .getmdl-select {
+  padding: 0;
+  height: 40px;
+}
+#lang-switch::before {
+  content: attr(data-lang);
+  height: 32px;
+  display: flex;
+  line-height: 35px;
+  justify-content: center;
+  pointer-events: visible;
+  position: absolute;
+  width: 32px;
+}
+#lang-switch .mdl-menu__container {
+  transform: translateX(-10px);
+}
+#lang {
+  padding: 0;
+  height: 40px;
+  opacity: 0;
+}

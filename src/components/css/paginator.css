@@ -1,0 +1,9 @@
+.loadmore,
+.paginator {
+  max-width: 100%;
+  text-align: center;
+  display: block;
+}
+.paginator .active {
+  border-bottom: 2px solid var(--primary-color);
+}

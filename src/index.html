@@ -3,23 +3,30 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="apple-mobile-web-app-title" content="RG-Backup">
+	<meta name="apple-mobile-web-app-title" content="RG-Archive">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="application-name" content="RG-Backup">
+	<meta name="application-name" content="RG-Archive">
 	<meta name="description" content="J2ME & Symbian app and game info archive. Неофициальный архив rugame.mobi | Java и Symbian игры и приложения"/>
 	<meta name="theme-color" content="#8BC34A">
 	<meta name="referrer" content="same-origin">
-	<link rel='icon' href='10.png'>
+	<link rel='icon' href='icons/10.png'>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap" rel="stylesheet">
 	<link rel="manifest" href="manifest.json">
 	<title>RuGame Archive</title>
 	<style>
+	:root {
+  	--primary-color: #4ac35c !important;
+  	--primary-color-transparent: rgba(74, 195, 92, 0.35) !important;
+  	--secondary-color: rgb(46, 114, 232) !important;
+	}
 	#splash {
-		background: #8BC34A;
+		background: var(--primary-color);
 		width: 100%;
 		height: 100%;
 		position: fixed;
 		z-index: 100000;
-		top: 0;
 		transition: top .4s;
 		left: 0;
 		top: 0;
@@ -31,53 +38,35 @@
 		border-bottom: none !important;
 	}
 	@keyframes upw {
-		0% { transform:translateY(0) }
-		100% { transform:translateY(-20%) }
+		0% { transform: translateY(0) }
+		100% { transform: translateY(-20%) }
 	}
-	body[v-cloak] .material-icons {
-    	font-size: 1px !important;
-    	max-width: 0px !important;
+	sup {
+		font-family: serif;
+  	opacity: .4;
+		padding: 0 4px;
 	}
-	/*
-	.mdl-layout.is-upgraded .mdl-layout__tab-panel {
-		display: block !important;
-		visibility: hidden;
-	}
-	.mdl-layout.is-upgraded .mdl-layout__tab-panel.is-active {
-		visibility: visible;
-	}
-	*/
 	</style>
 </head>
-<body v-cloak>
+<body>
 	<div id="splash"></div>
-	<div id="spinner">
+	<div id="spinner" v-scope v-show="app.loading" title="Loading" :title="locale.loading">
 		<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active"></div>
 	</div>
-	<div v-scope="AppPage()" v-if="app.selectedId && (app.selectedDir in locale.tabs)" @mounted="load"></div>
-	<div v-scope="QuickSettingsWindow()" v-if="app.ui == 'settings'" @mounted="mounted"></div>
+	<div v-scope="AppPage({id: app.virtual.selectedId || app.selectedId, dir: app.virtual.selectedDir || app.selectedDir})" 
+			 v-if="(app.virtual.selectedId || app.selectedId) && (app.selectedDir in locale.tabs || app.virtual.selectedDir in locale.tabs)" @vue:mounted="load"></div>
+	<div v-scope="QuickSettingsWindow()" v-if="app.ui == 'settings'" @vue:mounted="mounted"></div>
 	<div id="infobox" class="hidden">
 		<i class="material-icons" id="closethebox" onclick="closeTheBox()" data-icon="close"></i>
 	</div>
-	<div class="container">
+	<div class="container" style="display: none;" >
 		<div id="ly" class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
 		            mdl-layout--fixed-header">
 		  <header class="mdl-layout__header" :class="{hideTabs: !(app.selectedDir in locale.tabs)}" v-scope="">
 		    <div class="mdl-layout__header-row">
-		    <span class="mdl-layout-title">RuGame Archive</span>
+		    <span class="mdl-layout-title">RuGame Archive<sup>beta</sup></span>
 		      <div class="mdl-layout-spacer"></div>
-		      <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable
-		                  mdl-textfield--floating-label mdl-textfield--align-right" id="searchbar">
-				<i class="material-icons topright" :data-icon="app.alphasort ? 'sort' : 'sort_by_alpha'" v-if="app.selectedDir in locale.tabs" @click="app.datasource.swapSorted()"></i>
-		        <label class="mdl-button mdl-js-button mdl-button--icon"
-		               for="fixed-header-drawer-exp">
-		          <i class="material-icons" data-icon="search"></i>
-		        </label>
-		        <div class="mdl-textfield__expandable-holder">
-		          <input class="mdl-textfield__input" type="text" name="srch" id="fixed-header-drawer-exp" onkeyup="optsearch()" onfocus="searchresults.classList.remove('hidden')" onblur="setTimeout(()=>searchresults.classList.add('hidden'),400)">
-		        </div>
-		        <div id="searchresults" class="hidden"></div>
-		      </div>
+		      <div v-scope="QuickSearch()" style="height:50px;z-index:3;"></div>
 		    </div>
 			<div class="tabs mdl-layout__tab-bar mdl-js-ripple-effect" v-scope="TabGroup()" v-show="app.selectedDir in locale.tabs"></div>
 		  </header>
@@ -87,16 +76,17 @@
 				<div v-scope="MenuItemSpoiler(symbianMenuSpoiler)"></div>
 				<div v-once v-scope="MenuItemGroup(mainMenuItemGroup)"></div>
 		    </nav>
-		    <small id="version">v3.0-pv beta ~ 05/08/21</small>
+		    <small id="version">frontend: v3.0-pv beta
+					/ data: v2.0 ~ 10/05/22</small>
 		  </div>
 		  <main id="lists" class="mdl-layout__content">
-			  <section @scroll.passive="loadOnScroll" class="mdl-layout__tab-panel" v-for="(category, catId) in app.currentMeta" v-scope="TabContent({catId, category})" :class="{'is-active': isVisible(catId)}"></section>
-			  <div v-scope="CustomContentFragment()"></div>
+			  <section @scroll.passive="loadOnScroll" class="mdl-layout__tab-panel" v-for="(category, catId) in app.currentMeta" v-scope="TabContent({catId, items: category, dir: app.selectedDir})" :class="{'is-active': isVisible(catId)}"></section>
+			  <div v-scope="CustomContentFragment()" class="wrap"></div>
 		  </main>
 		</div>
 	</div>
 	<template id="MenuItem">
-		<a class="mdl-navigation__link" :class="{mds: app.selectedDir == link}" :href="app.prefix + link"><i class="material-icons mic" :data-icon="icon"></i>{{name}}</a>
+		<a class="mdl-navigation__link" :class="{mds: app.selectedDir == link}" :href="app.prefix + link"><i class="material-icons mic" :data-icon="link in app.meta? 'check' : icon"></i>{{name}}</a>
 	</template>
 	<template id="MenuItemGroup">
 		<div v-scope="MenuItem(item)" v-for="item in items"></div>
@@ -104,7 +94,7 @@
 	<template id="MenuItemSpoiler">
 		<div class="mspoiler" :class="{mopen: open}">
 			<div class="mheader" @click=toggleSpoiler()>
-				<i class="material-icons mic" :data-icon="icon"></i>{{title}}<i class="material-icons marr" data-icon="keyboard_arrow_down"></i>
+				<i class="material-icons mic" :data-icon="icon" v-if="icon"></i><i class="external-icon" v-else v-html="eIcon"></i>{{title}}<i class="material-icons marr" data-icon="keyboard_arrow_down"></i>
 			</div>
 			<div class="mcontent">
 				<div v-scope="MenuItem(item)" v-for="item in items"></div>
@@ -112,263 +102,44 @@
 		</div>
 	</template>
 	<template id="Tab">
-		<a @click="tabClick" :data-id="item.id" class="mdl-layout__tab" :class="{'is-active': app.selectedCategory == item.id}" :href="app.prefix + app.selectedDir + '/cat/' + item.id">{{item.tab}}</a>
+		<a @click="tabClick" class="mdl-layout__tab" :class="{'is-active': app.selectedCategory == item.id}" :href="app.prefix + app.selectedDir + '/cat/' + item.id">{{item.tab}}</a>
 	</template>
 	<template id="TabGroup">
 		<span v-scope="Tab(item)" v-for="item in app.tabs"></span>
 	</template>
 	<template id="TabContent">
 		<ul class="page-content mdl-list">
-			<li v-scope="DynamicTabContentPage({category})" v-if="app.displayMode == D_MODES.AdvancedPagination"></li>
+			<li v-scope="DynamicTabContentPage({items})" v-if="parseInt(app.config.displaymode) == D_MODES.AdvancedPagination"></li>
 			<div v-else>
-				<li v-scope="TabContentPage({page: page-1, category})" v-for="page in pages" :class="{hidden: isHidden(page)}"></li>
+				<li v-scope="TabContentPage({page: page-1, items})" v-for="page in pages" :class="{hidden: isHidden(page)}"></li>
 			</div>
-			<div v-scope="Pagination({totalPages: pages})" class="paginator" v-if="app.displayMode >= D_MODES.Pagination && isVisible(catId)"></div>
+			<div v-scope="Pagination({totalPages: pages})" class="paginator" v-if="parseInt(app.config.displaymode) >= D_MODES.Pagination && isVisible(catId)"></div>
+			<div v-if="parseInt(app.config.displaymode) == D_MODES.Onscroll && nonScrollable"><button class="center mdl-button mdl-js-button page-item" @click="loadOnScroll">{{locale.loadmore}}</button></div>
 		</ul>
 	</template>
 	<template id="TabContentPage">
-		<a class="mdl-list__item" v-for="appItem in apps" :href="app.prefix + app.selectedDir + '/' + appItem[0]">
+		<a class="mdl-list__item" v-for="appItem in apps" :href="app.prefix + (dir || appItem[2]) + '/' + appItem[0] + '/info'">
 			<span class="mdl-list__item-primary-content">
-				<img class="mdl-list__item-icon appic" src="10.png">
+				<img class="mdl-list__item-icon appic" :src="app.datasource.icons.getIcon(appItem[0], dir || appItem[2])">
 				<span class="mdl-list__item-text-body">{{appItem[1]}}</span>
 			</span>
 			<span class="mdl-list__item-secondary-content">
-				<i class="material-icons" :data-icon="appItem[2] ? 'flag' : 'info'"></i>
+				<i class="material-icons" :data-icon="dir && appItem[2] ? 'flag' : 'info'"></i>
 			</span>
 		</a>
-	</template>
-	<template id="Pagination">
-		<div class="pagination-container">
-			<button @click="prevPage" class="mdl-button mdl-js-button page-item prev-page-button" :class="{hidden: currentPage == 1}">&lt;</button>
-			<button @click="nextPage" class="mdl-button mdl-js-button page-item next-page-button" :class="{hidden: currentPage == totalPages}">&gt;</button>
-			<br>
-			<button @click="firstPage" class="mdl-button mdl-js-button page-item first-page-button" v-show="pagesLR.leftPage > 1">&lt;&lt;</button>
-			<button @click="toPage" class="mdl-button mdl-js-button page-item main-page-button" v-for="pageNumber in range" :class="{active: displayPage == currentPage}" :data-page="displayPage">
-				{{displayPage}}
-			</button>
-			<button @click="lastPage" class="mdl-button mdl-js-button page-item last-page-button" v-show="pagesLR.rightPage < totalPages">&gt;&gt;</button>
-		</div>
 	</template>
 	<template id="CustomContentFragment">
 		<div v-if="app.selectedDir == 'favourites'" v-scope="Favourites()"></div>
-		<div v-if="app.selectedDir == 'blog'" class="blog" v-scope="Blog()" @mounted="mounted"></div>
-		<div v-if="app.selectedDir == 'comments'" v-scope="Discussion()" @mounted="mounted"></div>
+		<div v-if="app.selectedDir == 'blog'" class="blog" :class="{postpage: app.selectedId}" v-scope="Blog()" @vue:mounted="mounted"></div>
+		<div v-if="app.selectedDir == 'comments'" v-scope="Discussion()" @vue:mounted="mounted"></div>
 		<div v-if="app.selectedDir == 'mirrors'" v-html="locale.mirrormenu"></div>
-	</template>
-	<template id="Blog">
-		<div v-for="post in posts">
-			<div class="mdl-grid blogpost" :class="{bpopened: app.selectedId == post.id, hiddenpost: app.selectedId && app.selectedId != post.id}">
-				<div class="mdl-card--expand mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
-					<a class="mdl-card__title" :style="{background: 'url(' + post.bgpic + ')'}" :href="app.prefix + 'blog/' + post.id">
-						<h2 class="mdl-card__title-text">{{post.title}}</h2>
-					</a>
-					<div class="mdl-card__supporting-text">
-						{{post.desc}}
-						<span class="mdl-chip"><span class="mdl-chip__text">{{post.date}}</span></span>
-					</div>
-					<div class="mdl-card__menu">
-						<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" onclick="toggleBlogPost(${post.id})"><i class="material-icons" data-icon="keyboard_arrow_right"></i></button>
-					</div>
-				<div class="mdl-card__actions mdl-card--border" v-html="post.longtext"></div>
-				</div>
-			</div>
-		</div>
+		<div v-if="app.selectedDir == 'search'" v-scope="SearchResults()" @vue:mounted="mounted"></div>
 	</template>
 	<template id="Discussion">
 		<div id="vkcomments"></div>
-		<div><a id="tglink" href="tg://resolve?domain=konon_mobi">Беседа konon.mobi в Telegram.</a></div>
+		<div><a id="tglink" href="tg://resolve?domain=javagangbang">Беседа konon.mobi в Telegram.</a></div>
 	</template>
-	<template id="Favourites">
-		<a class="mdl-list__item" :href="app.prefix + item.dir + '/' + item.id" v-for="item in items">
-			<span class="mdl-list__item-primary-content">
-				<span class="mdl-list__item-text-body">{{item.name}}</span>
-			</span>
-			<span class="mdl-list__item-secondary-content">
-				<i class="material-icons" data-icon="star"></i>
-			</span>
-		</a>
-	</template>
-	<template id="AppPage">
-		<div id="thebox" class="box" v-if="item">
-			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-				<header class="mdl-layout__header">
-					<img class="mdl-layout-icon" src="10.png">
-				    <div class="mdl-layout__header-row" id="appTop">
-				    	<span class="mdl-layout-title marquee" id="titleOverlay"><span>{{item.name}}</span>
-				        	<i class="material-icons" data-icon="3d_rotation" v-show="item.sBT"></i>
-							<i class="material-icons" data-icon="bluetooth" v-show="item.s3D"></i></span>
-				    	<div class="mdl-layout-spacer"></div>
-				        <nav class="mdl-navigation">
-				        	<i class="material-icons mdl-navigation__link" :data-icon="starIcon" id="fvicon" @click="updateFavStatus(item.name)"></i>
-				        	<i class="material-icons mdl-navigation__link" data-icon="cloud_upload" @click="toggleSourceSpoiler"></i>
-				        </nav>
-				    </div>
-				    <div class="mdl-layout__header-row mdl-grid" v-show="sourceSpoilerOpen">
-				    	<a :href="getLink()" target="_blank" class="mdl-cell  ai">
-							<i class="material-icons" data-icon="public"></i>
-							<span tabindex="0">{{locale.src}}</span>
-						</a>
-				    	<a :href="'https://web.archive.org/' + getLink()" target="_blank" class="mdl-cell ai">
-							<i class="material-icons" data-icon="archive"></i>
-							<span tabindex="0">W/A</span>
-						</a>
-				    </div>
-				    <div class="mdl-layout__header-row mdl-grid">
-						<div class="mdl-cell ai" id="appViews">
-							<i class="material-icons" data-icon="remove_red_eye"></i>
-							<span>{{item.vie}}</span>
-						</div>
-						<a href="#dls" class="mdl-cell ai" id="appDls">
-							<i class="material-icons" data-icon="file_download"></i>
-							<span>{{item.dwn}}</span>
-						</a>
-						<a href="#" class="mdl-cell ai" id="appComments">
-							<i class="material-icons" data-icon="comment"></i>
-				    		<span>{{item.cmm}}</span>
-						</a>
-				    </div>
-				    <div id="p1" ref="p1" class="mdl-progress mdl-js-progress"></div>
-				    <div id ="appRating" class="mdl-tooltip" data-mdl-for="p1">{{item.rating.rtg}}</div>
-				</header>
-				<p id="appDesc" v-html="item.desc"></p>
-				<div>
-					<div class="mdl-grid">
-						<div class="mdl-cell mdl-cell--4-col ai" id="appBy">
-							<i class="material-icons" data-icon="person_pin"></i>
-							<span>{{item.upl}}</span>
-						</div>
-						<div class="mdl-cell mdl-cell--4-col ai" id="appVendor">
-							<i class="material-icons" data-icon="work"></i>
-							<span>{{item.vnd}}</span>
-						</div>
-						<div class="mdl-cell mdl-cell--4-col ai" id="appCat">
-							<i class="material-icons" data-icon="label"></i>
-							<span>{{item.cat}}</span>
-						</div>
-					</div>
-					<div class="mdl-grid">
-						<div class="mdl-cell mdl-cell--5-col ai" id="appDate">
-							<i class="material-icons" data-icon="file_upload"></i>
-						   	<span>{{item.add}}</span>
-						</div>
-						<div class="mdl-cell mdl-cell--5-col ai" id="appUpdate" v-if="item.upd">
-							<i class="material-icons" data-icon="update"></i>
-						  	<span>{{item.upd}}</span>
-						</div>
-					</div>
-				</div>
-				<span id="tooltips">
-					<div class="mdl-tooltip" :data-mdl-for="name" v-for="(tooltip, name) in locale.tooltips">{{tooltip}}</div>
-				</span>
-				<hr>
-				<div id="related" v-if="app.related">
-					<div class="mdl-list__item" v-for="rel in app.related">
-						<a :href="app.prefix + app.selectedDir + '/' + rel">{{getRelatedAppName(rel)}}</a>
-					</div>
-				</div>
-				<div id="dls" v-if="item.files">
-					<div v-for="group in item.files">
-						<span v-html="group.text"></span>
-						<div class="mdl-grid">
-							<a :href="link.url" rel="noreferrer"
-								v-for="(link, index) in group.links" class="mdl-cell mdl-cell--5-col ai" :class="{red: link.not_renamed}"
-								:target="link.target" :id="link.id">
-								<i class="material-icons" data-icon="file_download"></i>{{link.type}}
-								<div class="mdl-tooltip mdl-tooltip--top" :data-mdl-for="link.id">{{link.file}}<br>{{link.size}}</div>
-							</a>
-							<span @click="archiveHelperFunction(event, group.links[0].file)" class="mdl-cell mdl-cell--5-col ai">
-								<i class="material-icons">archive</i>ArchiveHelper
-							</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<a v-if="item" class="boxbg" :href="app.prefix + app.selectedDir"></a>
-	</template>
-	<template id="QuickSettingsWindow">
-		<div id="about" class="box">
-			<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-				<header class="mdl-layout__header">
-					<i class="material-icons mdl-layout-icon" data-icon="settings"></i>
-					<div class="mdl-layout__header-row">
-						<span class="mdl-layout-title"><span id="ab1">{{locale.about}}</span></span>
-						<span id="ab2" onclick="switchLang()">{{locale.l}}</span>
-					</div>
-				</header>
-				<div class="mdl-grid">
-					<div class="mdl-cell mdl-cell--12-col" style="text-align:justify">
-						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="videogame_asset"></i></div>
-						<div v-html="locale.about2"></div>
-						<div class="mdl-cell mdl-cell--5-col ai"><i class="material-icons" data-icon="wifi"></i></div>
-						<div>{{locale.traffic}}</div>
-						<div id="config" class="mdl-grid" style="text-align:center">
-							<div class="mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet">
-								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cicons">
-									<input type="checkbox" id="cicons" class="mdl-switch__input" checked>
-									<span class="mdl-switch__label" v-html="locale.icons"></span>
-								</label>
-							</div>
-							<div class=" mdl-cell mdl-cell--4-col mdl-cell--2-offset-desktop mdl-cell--12-col-tablet">
-								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cscreenshots">
-									<input type="checkbox" id="cscreenshots" class="mdl-switch__input" checked>
-									<span class="mdl-switch__label">{{locale.screenshots}}</span>
-								</label>
-							</div>
-							<div style="margin-top:60px"></div>
-							<div class="mdl-grid">
-								<div class="mdl-cell mdl-cell--12-col ai"><i class="material-icons" data-icon="sort_by_alpha"></i></div>
-							</div>
-							<div class=" mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet">
-								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="cazsort">
-									<input type="checkbox" id="cazsort" class="mdl-switch__input">
-									<span class="mdl-switch__label">{{locale.alphasort}}</span>
-								</label><br><br>
-								<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="carchelper">
-									<input type="checkbox" id="carchelper" class="mdl-switch__input">
-									<span class="mdl-switch__label">{{locale.archivehelper}}</span>
-								</label><br><br>
-								<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fix-height">
-								 	<input type="text" value="" class="mdl-textfield__input" id="pmode" readonly>
-								 	<input type="hidden" value="" name="pmode">
-								 	<i class="mdl-icon-toggle__label material-icons" data-icon="keyboard_arrow_down"></i>
-								 	<label for="pmode" class="mdl-textfield__label">{{locale.listmode}}</label>
-								 	<ul for="pmode" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
-									 	<li class="mdl-menu__item" data-val="-1">{{locale.pfullcv}}</li>
-									 	<li class="mdl-menu__item" data-val="0">{{locale.pfull}}</li>
-									 	<li class="mdl-menu__item" data-selected="true" data-val="1">{{locale.pload}}</li>
-									 	<li class="mdl-menu__item" data-val="2">{{locale.ppage}}</li>
-								 	</ul>
-								</div>
-							</div>
-						</div><br>
-						<div class="mdl-cell mdl-cell--12-col" style="text-align:center">
-							<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mdl-cell mdl-cell--5-col" onclick="saveConfig()">
-								{{locale.save}}
-							</button><br>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<a class="boxbg" :href="app.prefix + app.selectedDir"></a>
-	</template>
-	<script defer src="lang.js"></script>
-	<script defer src="router.js"></script>
-	<script defer src="tools/utils.js"></script>
-	<script defer src="tools/mirrors.js"></script>
-	<script defer src="tools/archelper.js"></script>
-	<script defer src="components/apppage.js"></script>
-	<script defer src="components/discussion.js"></script>
-	<script defer src="components/menu.js"></script>
-	<script defer src="components/tabs.js"></script>
-	<script defer src="components/paginator.js"></script>
-	<script defer src="components/blog.js"></script>
-	<script defer src="components/favourites.js"></script>
-	<script defer src="components/quicksettings.js"></script>
-	<script defer src="lib/petite-vue.iife.js"></script>
-	<script defer src="postinit.js"></script>
-	<script defer src="datasource.js"></script>
-	<script defer src="init.js"></script>
+	<script defer type="module" src="./lang.js"></script>
+	<script type="module" defer src="./entry.js"></script>
 </body>
 </html>

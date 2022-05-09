@@ -1,0 +1,35 @@
+
+#spinner {
+  top: 50%;
+  z-index: 4;
+  width: 28px;
+  height: 28px;
+  transition: 0.2s;
+  margin: 0 auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+#spinner:after {
+  transform: translateX(-50%);
+  display: block;
+}
+#spinner:after {
+  content: attr(title);
+  animation: ldg 2s linear infinite;
+}
+
+@keyframes ldg {
+  20% {
+    content: attr(title);
+  }
+  50% {
+    content: attr(title) ".";
+  }
+  70% {
+    content: attr(title) "..";
+  }
+  90% {
+    content: attr(title) "...";
+  }
+}

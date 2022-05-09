@@ -1,0 +1,15 @@
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right" id="searchbar">
+  <i class="material-icons topright" :data-icon="app.alphasort ? 'sort' : 'sort_by_alpha'" v-if="app.selectedDir in locale.tabs" @click="app.datasource.swapSorted()"></i>
+  <label class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+    <i class="material-icons" data-icon="search"></i>
+  </label>
+  <div class="mdl-textfield__expandable-holder">
+    <input class="mdl-textfield__input" type="text" name="srch" id="fixed-header-drawer-exp" @keyup="handleInput(event.target.value)" @focus="showResults" @blur="hideResults">
+  </div>
+  <div id="quickresults" v-show="resultsVisible">
+    <a :href='result.link' v-for="result in found"><img class="mdl-list__item-icon" :src="app.datasource.icons.getIcon(result.id, result.dir)">{{result.text}}<br></a>
+    <a v-if="total === 0 && lastQuery.length > 2">{{locale.search.notfound}}</a>
+    <a v-if="total === 0 && lastQuery.length == 0" :href="app.prefix + 'search'">{{locale.search.full}}</a>
+    <a id="totalr" v-if="total > found.length" :href="app.prefix + 'search/cat/run'">{{locale.search.found}} {{total}}</a>
+  </div>
+</div>

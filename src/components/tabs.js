@@ -1,3 +1,7 @@
+/* eslint-disable eqeqeq */
+import {D_MODES} from '../enums'
+const ITEMS_PER_PAGE = 20
+
 function Tab(props) {
   return {
     $template: '#Tab',
@@ -5,8 +9,8 @@ function Tab(props) {
     name: props.id,
     icon: props.name,
     tabClick(e) {
-        app.selectedPage = 1
-        e.stopImmediatePropagation()
+      app.selectedPage = 1
+      e.stopImmediatePropagation()
     }
   }
 }
@@ -19,29 +23,31 @@ function TabGroup(props) {
 
 function TabContent(props) {
   return {
-    pages: Math.ceil(props.category.length/20),
+    pages: Math.ceil(props.items.length / ITEMS_PER_PAGE),
     $template: '#TabContent',
+    items: props.items,
     dir: props.dir,
+    catId: props.catId,
+    nonScrollable: props.nonScrollable,
     isVisible(id) {
-      if (app.selectedCategory == id)
-        return app.selectedCategory == id // && app.selectedDir === props.dir
+      return app.selectedCategory == id
     },
     loadOnScroll(e) {
-        if (app.displayMode != D_MODES.Onscroll) return
-        if (e.target.offsetHeight + e.target.scrollTop > e.target.scrollHeight - 60) {
-            app.selectedPage += 1
-        }
+      if (app.config.displaymode != D_MODES.Onscroll) return
+      if (e.target.offsetHeight + e.target.scrollTop > e.target.scrollHeight - 60) {
+        if (app.selectedPage < this.pages) app.selectedPage += 1
+      }
     }
   }
 }
 
 function TabContentPage(props) {
   return {
-    apps: props.category.slice(props.page * 20, (1 + props.page) * 20),
+    apps: props.items.slice(props.page * ITEMS_PER_PAGE, (1 + props.page) * ITEMS_PER_PAGE),
     $template: '#TabContentPage',
     isHidden(page) {
-        return (app.displayMode == D_MODES.Pagination && page != app.selectedPage) ||
-               (app.displayMode == D_MODES.Onscroll && page > app.selectedPage)
+      return (app.config.displaymode == D_MODES.Pagination && page != app.selectedPage) ||
+             (app.config.displaymode == D_MODES.Onscroll && page > app.selectedPage)
     }
   }
 }
@@ -49,15 +55,16 @@ function TabContentPage(props) {
 function DynamicTabContentPage(props) {
   return {
     get apps() {
-        return props.category.slice((app.selectedPage - 1) * 20, app.selectedPage * 20)
+      return props.items.slice((app.selectedPage - 1) * ITEMS_PER_PAGE, app.selectedPage * ITEMS_PER_PAGE)
     },
     $template: '#TabContentPage'
-    }
+  }
 }
-
 
 function CustomContentFragment(props) {
-    return {
-        $template: '#CustomContentFragment'
-    }
+  return {
+    $template: '#CustomContentFragment'
+  }
 }
+
+export {Tab, TabGroup, TabContent, TabContentPage, DynamicTabContentPage, CustomContentFragment}
