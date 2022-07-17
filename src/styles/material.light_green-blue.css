@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /**
  * material-design-lite - Material Design Components in CSS, JS and HTML
  * @version v1.3.0
@@ -12,7 +13,6 @@
 	--secondary-color: rgb(68, 138, 255);
 }
 
-@charset "UTF-8";
 html {
 	color: rgba(0, 0, 0, .87)
 }

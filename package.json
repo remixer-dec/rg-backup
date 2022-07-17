@@ -13,7 +13,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.2.0",
     "eslint-plugin-promise": "^6.0.0",
-    "vite": "^2.9.5",
+    "vite": "^3.0.0",
     "vite-plugin-comlink": "^3.0.2",
     "vite-plugin-webfont-dl": "^2.0.0"
   },

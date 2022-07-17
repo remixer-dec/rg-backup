@@ -104,11 +104,12 @@ function UnusedCodeRemover(targets) {
   }
 }
 
-// use comlink in production, keeping dev mode in firefox
+// allows to use comlink in production, keeping dev mode in firefox
 function ComlinkDevFirefox() {
   const workerSearcher =
   /\bnew\s+(ComlinkWorker)\s*\(\s*new\s+URL\s*\(\s*('[^']+'|"[^"]+"|`[^`]+`)\s*,\s*import\.meta\.url\s*\)\s*(.*)\)/g
   return {
+    name: 'comlink-dev-firefox',
     transform(code, id) {
       if (!code.includes('ComlinkWorker')) return
       if (!id.endsWith('.js')) return
@@ -122,8 +123,22 @@ function ComlinkDevFirefox() {
   }
 }
 
+// replaces variables in html at build-time
+function HTMLBuildAttributes(items) {
+  return {
+    name: 'html-build-attributes',
+    transformIndexHtml(html, ctx) {
+      for (const item in items) {
+        html = html.replace('[[' + item + ']]', items[item])
+      }
+      return html
+    }
+  }
+}
+
 export {
   FontSubsetMaker,
   UnusedCodeRemover,
-  ComlinkDevFirefox
+  ComlinkDevFirefox,
+  HTMLBuildAttributes
 }
