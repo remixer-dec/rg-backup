@@ -1,0 +1,41 @@
+name: Build with Vite and deploy to the static server
+
+on:
+  push:
+    branches: [ "v3" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: beta-deployment
+    
+    strategy:
+      matrix:
+        node-version: [16.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install fonttools
+      run: sudo apt-get install -y fonttools
+
+    - name: Build
+      run: |
+        npm install --global yarn
+        yarn
+        npx vite build
+
+    - name: Package
+      run: |
+        cd dist/
+        echo $ZIP_COMMENT| zip -q --password $ZIP_PASSWORD $ZIP_NAME * -z
+    
+    - name: Deploy
+      run: |
+        cd dist/
+        curl -F "file=@$ZIP_NAME" $DEPLOYMENT_URL
