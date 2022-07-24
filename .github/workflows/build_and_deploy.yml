@@ -31,11 +31,18 @@ jobs:
         npx vite build
 
     - name: Package
+      env:
+        ZIP_PASSWORD: ${{ secrets.ZIP_PASSWORD }}
+        ZIP_NAME: ${{ secrets.ZIP_NAME }}
+        ZIP_COMMENT: ${{ secrets.ZIP_COMMENT }}
       run: |
         cd dist/
-        echo $ZIP_COMMENT| zip -q --password $ZIP_PASSWORD $ZIP_NAME * -z
+        echo $ZIP_COMMENT| zip -r -q --password $ZIP_PASSWORD $ZIP_NAME * -z
     
     - name: Deploy
+      env:
+        ZIP_NAME: ${{ secrets.ZIP_NAME }}
+        DEPLOYMENT_URL: ${{ secrets.DEPLOYMENT_URL }}
       run: |
         cd dist/
         curl -F "file=@$ZIP_NAME" $DEPLOYMENT_URL
