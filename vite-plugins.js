@@ -2,7 +2,7 @@ const fs = require('fs')
 const axios = require('axios')
 const {spawn} = require('child_process')
 
-// creates font based with icons that are used in the project (requires fonttools binary)
+// creates icon font ONLY with icons that are used in the project (requires fonttools binary)
 function FontSubsetMaker({searchPattern, codePoint, extraIcons = [], fontPath}) {
   let unicodes = ''
   let fontName = ''

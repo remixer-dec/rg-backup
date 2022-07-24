@@ -41,7 +41,7 @@ export default function AppPage(props) {
       const rtg = this.item.rating.rtg.split('/')
       nextTick(() => {
         componentHandler.upgradeDom()
-        this.$refs.p1.MaterialProgress.setProgress((rtg[0] * 100) / (parseInt(rtg[0]) + parseInt(rtg[1])))
+        this.$refs.p1?.MaterialProgress?.setProgress((rtg[0] * 100) / (parseInt(rtg[0]) + parseInt(rtg[1])))
       })
     },
     getRelatedAppName(id) {

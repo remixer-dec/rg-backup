@@ -20,3 +20,23 @@
 .ai i {
   display: block;
 }
+
+.rating-icons i {
+  font-size: 12px;
+  padding: 2px 2px;
+}
+
+.rating-icons {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+.thebox > div::before {
+  background: var(--secondary-color);
+  height: 200px;
+  width: 100%;
+  display: block;
+  content: '';
+  position: absolute;
+}

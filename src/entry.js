@@ -80,7 +80,7 @@ initialize().then(() => {
   }
   document.getElementsByClassName('container')[0].style.display = 'block'
   // hide splashscreen after loading
-  setTimeout(() => window.splash.classList.add('spf'), 300)
+  setTimeout(() => window.splash.classList.add('hideSplash'), 300)
   setTimeout(() => app.initialized.resolve(), 1000)
   setTimeout(() => window.splash.remove(), 21000)
   componentHandler.upgradeDom()

@@ -33,7 +33,7 @@ class V2DataSource extends DataSource {
       for (let y = 0, links = data.files[i].links, l2 = links.length; y < l2; y++, id++) {
         links[y].type = links[y].file.slice(1 + links[y].file.lastIndexOf('.')).toUpperCase() || '???'
         links[y].size = links[y].type !== 'JAD' ? data.files[i].size : ''
-        links[y].url = mirror ? `${mirror}${app.selectedDir}/${links[y].file}` : "javascript:alert('" + locale.nomirror + "')"
+        links[y].url = mirror ? `${mirror}${app.selectedDir}/${links[y].file}` : "javascript:alert('" + locale.mirrors.no + "')"
         links[y].target = mirror ? blank : none
         links[y].id = 'x' + id
       }

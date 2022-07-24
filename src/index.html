@@ -7,13 +7,13 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="application-name" content="RG-Archive">
 	<meta name="description" content="J2ME & Symbian app and game info archive. Неофициальный архив rugame.mobi | Java и Symbian игры и приложения"/>
-	<meta name="theme-color" content="#8BC34A">
+	<meta name="theme-color" content="#4AC35C">
 	<meta name="referrer" content="same-origin">
 	<link rel='icon' href='icons/10.png'>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap" rel="stylesheet">
-	<link rel="manifest" href="manifest.json">
+	<!--<link rel="manifest" href="manifest.json">-->
 	<title>RuGame Archive</title>
 	<style>
 	:root {
@@ -33,7 +33,7 @@
 		animation: upw 5s ease-in-out forwards;
 		border-bottom: 100px solid white;
 	}
-	.spf {
+	.hideSplash {
 		top: -100% !important;
 		border-bottom: none !important;
 	}
@@ -76,8 +76,8 @@
 				<div v-scope="MenuItemSpoiler(symbianMenuSpoiler)"></div>
 				<div v-once v-scope="MenuItemGroup(mainMenuItemGroup)"></div>
 		    </nav>
-		    <small id="version">frontend: v3.0-pv beta
-					/ data: v2.0 ~ 10/05/22</small>
+		    <small id="version">frontend: [[BUILD_VERSION]]-pv beta
+					/ data: v2.0 ~ [[BUILD_DATE]]</small>
 		  </div>
 		  <main id="lists" class="mdl-layout__content">
 			  <section @scroll.passive="loadOnScroll" class="mdl-layout__tab-panel" v-for="(category, catId) in app.currentMeta" v-scope="TabContent({catId, items: category, dir: app.selectedDir})" :class="{'is-active': isVisible(catId)}"></section>
@@ -132,7 +132,7 @@
 		<div v-if="app.selectedDir == 'favourites'" v-scope="Favourites()"></div>
 		<div v-if="app.selectedDir == 'blog'" class="blog" :class="{postpage: app.selectedId}" v-scope="Blog()" @vue:mounted="mounted"></div>
 		<div v-if="app.selectedDir == 'comments'" v-scope="Discussion()" @vue:mounted="mounted"></div>
-		<div v-if="app.selectedDir == 'mirrors'" v-html="locale.mirrormenu"></div>
+		<div v-if="app.selectedDir == 'mirrors'" v-html="locale.mirrors.menu"></div>
 		<div v-if="app.selectedDir == 'search'" v-scope="SearchResults()" @vue:mounted="mounted"></div>
 	</template>
 	<template id="Discussion">
@@ -140,6 +140,6 @@
 		<div><a id="tglink" href="tg://resolve?domain=javagangbang">Беседа konon.mobi в Telegram.</a></div>
 	</template>
 	<script defer type="module" src="./lang.js"></script>
-	<script type="module" defer src="./entry.js"></script>
+	<script defer type="module" src="./entry.js"></script>
 </body>
 </html>

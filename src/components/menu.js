@@ -83,7 +83,7 @@ if (locale.l === 'ru') {
 
 mainMenuItemGroup.items.push({
   icon: 'clear_all',
-  name: locale.mirrors,
+  name: locale.mirrors.name,
   link: 'mirrors'
 })
 

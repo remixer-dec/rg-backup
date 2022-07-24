@@ -36,8 +36,14 @@
             <span>{{item.cmm}}</span>
         </a>
         </div>
+        <div v-if="item.rating.rtg !== '0/0'">
+        <div class="rating-icons">
+          <i class="material-icons" data-icon="thumb_up"></i>
+          <i class="material-icons" data-icon="thumb_down"></i>
+        </div>
         <div id="p1" ref="p1" class="mdl-progress mdl-js-progress"></div>
         <div id ="appRating" class="mdl-tooltip" data-mdl-for="p1">{{item.rating.rtg}}</div>
+        </div>
     </header>
     <center><img :src='screenshot' v-if="screenshot"></center>
     <p id="appDesc" v-html="item.desc"></p>

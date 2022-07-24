@@ -117,6 +117,9 @@
 .blogpost button {
   display: block;
 }
+.blog .mdl-card__menu .mdl-button:hover {
+  background: transparent !important;
+}
 @media only screen and (max-width: 600px) {
   .blog > div {
     max-width: 100%;
