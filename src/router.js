@@ -39,6 +39,7 @@ export default class Router {
           const appId = parseInt(id) || ''
           if (app.selectedId) {
             app.selectedId = false
+            app.virtual.selectedId = false
             nextTick(() => (app.selectedId = appId))
           } else {
             app.selectedId = appId
