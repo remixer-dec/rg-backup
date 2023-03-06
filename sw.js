@@ -1,4 +1,4 @@
-var staticCache = 'rg-main-v10'
+var staticCache = 'rg-main-v11'
 var allCaches = [staticCache]
 
 self.addEventListener('install', (event) => {
