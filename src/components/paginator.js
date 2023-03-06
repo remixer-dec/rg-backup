@@ -35,7 +35,7 @@ export default function Pagination(props) {
       return parseInt(app.selectedPage)
     },
     get range() {
-      const range = this.totalPages > 3 ? 5 : this.totalPages
+      const range = this.totalPages > 4 ? 5 : this.totalPages
       return range
     },
     get pagesLR() {

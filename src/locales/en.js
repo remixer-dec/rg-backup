@@ -1,6 +1,6 @@
 export default {
   l: 'en',
-  notSupported: 'Your browser does not support ES6. This app requires it. Please updete your browser if you want to use this project.',
+  notSupported: 'Your browser does not support ES6. This app requires it. Please update your browser if you want to use this project.',
   tabs: {
     apps: [
       [3482, 'ARCHIVERS'], [3483, 'MULTIMEDIA'], [3484, 'INTERNET'], [3485, 'GPS'], [3486, 'SYSTEM'], [3738, 'MAPS'],
@@ -85,8 +85,8 @@ export default {
   screenshots: 'screenshots (on demand)',
   save: 'save settings',
   cache: 'caching',
-  reload: 'relod the app?',
-  alphasort: 'alphabeticall sorting',
+  reload: 'reload the app?',
+  alphasort: 'alphabetical sorting',
   archivehelper: 'multi-part archive helper',
   pf: 'fix lags turning "all" tab off',
   pferr: 'This tab wad disabled in settings',
@@ -101,7 +101,7 @@ export default {
   favs: 'Favorites',
   mirrors: {
     name: 'Mirrors',
-    menu: "<div class='bpx'>In this version you can set up 1 file mirror:<br> <button class='mdl-button mdl-button--colored' onclick='app.selectMirrorPath()'>Set up path</button><br>Your local backup server can be used together with this app, to provide you with better file search options.<br></br> With any file-ralated questions please contact mirror owners. We are not responsible for those files</div>",
+    menu: "<div class='bpx'>In this version you can set up 1 file mirror:<br> <button class='mdl-button mdl-button--colored' onclick='app.selectMirrorPath()'>Set up path</button><br>Your local backup server can be used together with this app, to provide you with better file search options.<br></br> With any file-related questions please contact mirror owners. We are not responsible for those files</div>",
     no: 'Please, set up a mirror URL to download files from that mirror!',
     path: 'Enter the path to the root folder with application files',
     fileSchema: 'Browsers do not allow you to link directly to local files. As a solution, a window with a link to a local file will be shown. It can be copied and pasted into the address bar. As an alternative, you can put a local http server and use an http-link to the mirror'
